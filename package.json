@@ -1,0 +1,28 @@
+{
+  "name": "lemonline",
+  "main": "dist/index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "export $(cat .env.development | xargs) &&  prisma generate && tsc-watch --outDir dist --onSuccess \"node ./dist/index.js\"",
+    "build:prod": "export $(cat .env.production | xargs) &&  prisma generate && tsc --outDir dist",
+    "clean": "rm -rf dist",
+    "start:prod": "export $(cat .env.production | xargs) && $NVM_PATH node dist/index.js",
+    "migrate:dev": "export $(cat .env.development | xargs) &&  prisma migrate dev &&  prisma generate",
+    "migrate:prod": "export $(cat .env.production | xargs) &&  prisma migrate deploy &&  prisma generate",
+    "reset:redis": "redis-cli FLUSHALL",
+    "start:full": "pnpm run clean && pnpm run build:prod && pnpm run reset:redis && pm2 reload lemonline"
+  },
+  "packageManager": "pnpm@10.11.0",
+  "dependencies": {
+    "@prisma/client": "6.8.2",
+    "@sapphire/discord.js-utilities": "^7.3.3",
+    "@sapphire/framework": "^5.3.5",
+    "discord.js": "~14.19.3"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.23",
+    "prisma": "^6.8.2",
+    "tsc-watch": "^7.0.0",
+    "typescript": "^5.8.3"
+  }
+}
