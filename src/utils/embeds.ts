@@ -2,7 +2,7 @@ import { EmbedBuilder, GuildMember, type APIEmbed } from 'discord.js';
 import { Color } from '../constants/colors.js';
 import { CustomError } from './errors.js';
 import { ErrorType } from '../constants/errors.js';
-import { findByDiscordId } from './database.js';
+import { findByDiscordId, initUser } from './database.js';
 import { truncateString } from './format.js';
 
 export function getErrorEmbed(error: string) {
@@ -13,9 +13,12 @@ export function getErrorEmbed(error: string) {
 }
 
 export function getVerboseErrorEmbed(error: CustomError) {
+    let desc = `Error message: ${error.message}`;
+    if (error.originalError) desc += `\nOriginal error: ${error.originalError}`;
+
     return new EmbedBuilder()
         .setTitle("😔 Error encountered.")
-        .setDescription(`Error message: ${error.message}\nOriginal error: ${error.originalError}`)
+        .setDescription(desc)
         .setColor(Color.TotalRed)
 }
 
@@ -70,7 +73,9 @@ export function parseEmbeds(rawEmbeds: string | undefined): APIEmbed[] | undefin
 
 export async function getProfileEmbed(member: GuildMember) {
 
-    const user = await findByDiscordId(member.id);
+    let user = await findByDiscordId(member.id);
+
+    if (!user) user = await initUser(member.id);
 
     if (!user) throw new CustomError("User not found in database.", ErrorType.Error, null);
 

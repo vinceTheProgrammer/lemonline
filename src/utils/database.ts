@@ -1,6 +1,7 @@
 import type { Collection, GuildMember } from 'discord.js';
 import prisma from '../utils/prisma.js';
 import { handlePrismaError } from './errors.js';
+import type { Intro, Prisma } from '@prisma/client';
 
 export async function logMessage(discordId: string, date?: Date) {
     try {
@@ -17,6 +18,18 @@ export async function logMessage(discordId: string, date?: Date) {
             data: {
                 discordId: discordId
             }
+        })
+    } catch (error) {
+        throw handlePrismaError(error);
+    }
+}
+
+export async function initUser(discordId: string) {
+    try {
+        return await prisma.user.create({
+            data: {
+                discordId: discordId
+            },
         })
     } catch (error) {
         throw handlePrismaError(error);
@@ -64,6 +77,69 @@ export async function findByDiscordId(discordId: string) {
         return await prisma.user.findFirst({
             where: {
                 discordId: discordId,
+            }
+        })
+    } catch (error) {
+        throw handlePrismaError(error);
+    }
+}
+
+export async function findByDiscordIdWithIntro(discordId: string) {
+    try {
+        return await prisma.user.findFirst({
+            where: {
+                discordId: discordId,
+            },
+            include: {
+                intro: {
+                    include: {
+                        socials: true
+                    }
+                }
+            }
+        })
+    } catch (error) {
+        throw handlePrismaError(error);
+    }
+}
+
+export async function updateIntroByDiscordIdAndIntro(discordId: string, data: Prisma.IntroUpdateInput) {
+    try {
+
+        const debug : Prisma.IntroCreateInput = {
+            user: {
+                connectOrCreate: {
+                    where: {discordId: discordId},
+                    create: {
+                        discordId: discordId
+                    }
+                },
+            }
+        }
+
+        const description = typeof data.description == 'string' ? data.description : null
+        const username = typeof data.username == 'string' ? data.username : null;
+        const interests = typeof data.interests == 'string' ? data.interests : null;
+        const postMessageId = typeof data.postMessageId == 'string' ? data.postMessageId : null;
+
+        return await prisma.intro.upsert({
+            where: {
+                userId: discordId
+            },
+            update: data,
+            create: {
+                description,
+                username,
+                interests,
+                postMessageId,
+                user: {
+                    connectOrCreate: {
+                        where: {discordId: discordId},
+                        create: {
+                            discordId: discordId
+                        }
+                    }
+                },
             }
         })
     } catch (error) {

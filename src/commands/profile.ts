@@ -1,5 +1,5 @@
 import { Command } from '@sapphire/framework';
-import { ApplicationCommandType } from 'discord.js';
+import { ApplicationCommandType, MessageFlags } from 'discord.js';
 import type { ContextMenuCommandType } from 'discord.js';
 import { handleCommandError } from '../utils/errors.js';
 import { handleProfileInteraction } from '../utils/interactions.js';
@@ -34,11 +34,12 @@ export class ProfileCommand extends Command {
   public override async chatInputRun(interaction: Command.ChatInputCommandInteraction) {
     try {
         const discordUserParameter = interaction.options.getUser('discord-user');
+        await interaction.deferReply({ flags: [MessageFlags.Ephemeral] });
 
         if (discordUserParameter) {
-            handleProfileInteraction(interaction, discordUserParameter.id);
+            await handleProfileInteraction(interaction, discordUserParameter.id);
         } else {
-            handleProfileInteraction(interaction, interaction.user.id);
+            await handleProfileInteraction(interaction, interaction.user.id);
         }
     } catch (error) {
         handleCommandError(interaction, error);
@@ -47,9 +48,11 @@ export class ProfileCommand extends Command {
 
   public override async contextMenuRun(interaction: Command.ContextMenuCommandInteraction) {
     try {
-        handleProfileInteraction(interaction, interaction.targetId);
+        await interaction.deferReply({ flags: [MessageFlags.Ephemeral] });
+
+        await handleProfileInteraction(interaction, interaction.targetId);
     } catch (error) {
-        handleCommandError(interaction, error);
+        await handleCommandError(interaction, error);
     }
   }
 }

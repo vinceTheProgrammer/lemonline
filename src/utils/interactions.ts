@@ -5,13 +5,9 @@ import { CustomError } from "./errors.js";
 import { ErrorMessage, ErrorType } from "../constants/errors.js";
 import { getProfileEmbed } from "./embeds.js";
 
-export async function verifyModalSubmit(interaction: ModalSubmitInteraction, member: GuildMember) {
+export async function formatIntroModalSubmit(interaction: ModalSubmitInteraction, lemon: string) {
     try {
-        await interaction.reply({ content: `Processing...`, flags: [MessageFlags.Ephemeral] });
-
-        await verifyMember(member);
-
-        await interaction.editReply({content: 'Sucessfully verified you. :)'});
+        await interaction.editReply({content: `epicly formatted text for the intro post, using your input: ${lemon}`});
     } catch (error) {
         throw error;
     }
@@ -19,8 +15,6 @@ export async function verifyModalSubmit(interaction: ModalSubmitInteraction, mem
 
 export async function handleProfileInteraction(interaction: Command.ChatInputCommandInteraction | Command.ContextMenuCommandInteraction, userId: string) {
     try {
-        await interaction.deferReply({ flags: [MessageFlags.Ephemeral] });
-
         const guild = interaction.guild;
 
         if (!guild) throw new CustomError(ErrorMessage.GuildNotDefined, ErrorType.Error, null);

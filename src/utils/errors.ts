@@ -2,7 +2,7 @@ import type { Command } from "@sapphire/framework";
 import { getErrorEmbed, getVerboseErrorEmbed, getWarningEmbed } from "./embeds.js";
 import { Prisma } from "@prisma/client";
 import { ErrorType } from "../constants/errors.js";
-import { MessageFlags, type ButtonInteraction, type ModalSubmitInteraction } from "discord.js";
+import { DiscordAPIError, MessageFlags, type ButtonInteraction, type ModalSubmitInteraction } from "discord.js";
 
 export class CustomError extends Error {
     originalError: Error | null;
@@ -28,18 +28,23 @@ export function handleCommandError(
     if (error instanceof CustomError) {
         switch (error.errorType) {
             case ErrorType.Error:
-                if (!interaction.replied) return interaction.reply({ content: '', embeds: [getVerboseErrorEmbed(error)], components: [], files: [], flags: [MessageFlags.Ephemeral]});
-                return interaction.editReply({ content: '', embeds: [getErrorEmbed(error.message)], components: [], files: []});
+                if (!interaction.replied && !interaction.deferred) return interaction.reply({ content: '', embeds: [getVerboseErrorEmbed(error)], components: [], files: [], flags: [MessageFlags.Ephemeral]});
+                return interaction.editReply({ content: '', embeds: [getVerboseErrorEmbed(error)], components: [], files: []});
             case ErrorType.Warning:
-                if (!interaction.replied) return interaction.reply({ content: '', embeds: [getWarningEmbed(error.message)], components: [], files: [], flags: [MessageFlags.Ephemeral]});
+                if (!interaction.replied && !interaction.deferred) return interaction.reply({ content: '', embeds: [getWarningEmbed(error.message)], components: [], files: [], flags: [MessageFlags.Ephemeral]});
                 return interaction.editReply({ content: '', embeds: [getWarningEmbed(error.message, error.footer)], components: [], files: [] });
             default:
-                if (!interaction.replied) return interaction.reply({ content: '', embeds: [getErrorEmbed(error.message)], components: [], files: [], flags: [MessageFlags.Ephemeral]});
+                if (!interaction.replied && !interaction.deferred) return interaction.reply({ content: '', embeds: [getErrorEmbed(error.message)], components: [], files: [], flags: [MessageFlags.Ephemeral]});
                 return interaction.editReply({ content: '', embeds: [getErrorEmbed(error.message)], components: [], files: [] });
         }
 
+    } else if (error instanceof DiscordAPIError) {
+        const string = `${error.name}: ${error.message}`;
+        if (!interaction.replied && !interaction.deferred) return interaction.reply({ content: '', embeds: [getErrorEmbed(string)], components: [], files: [], flags: [MessageFlags.Ephemeral]});
+        return interaction.editReply({ content: '', embeds: [getErrorEmbed(string)], components: [], files: [] });
     } else {
         console.error('Unexpected Error:', error);
+        if (!interaction.replied && !interaction.deferred) return interaction.reply({ content: 'An unexpected error occurred. Please tell vincetheanimator.', embeds: [], components: [], flags: [MessageFlags.Ephemeral] });
         return interaction.editReply({ content: 'An unexpected error occurred. Please tell vincetheanimator.', embeds: [], components: [] });
     }
 }

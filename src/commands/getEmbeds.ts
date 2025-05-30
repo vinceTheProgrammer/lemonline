@@ -4,7 +4,7 @@ import { AttachmentBuilder, ChannelType, MessageFlags, TextChannel } from 'disco
 import { CustomError, handleCommandError } from '../utils/errors.js';
 import { ErrorType } from '../constants/errors.js';
 
-export class CreateMessageCommand extends Command {
+export class GetEmbedsCommand extends Command {
     public constructor(context: Command.Context, options: Command.Options) {
         super(context, {
             ...options,
