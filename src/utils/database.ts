@@ -146,3 +146,78 @@ export async function updateIntroByDiscordIdAndIntro(discordId: string, data: Pr
         throw handlePrismaError(error);
     }
 }
+
+export async function incrementIntroRepostCount(discordId: string) {
+    try {
+        return await prisma.intro.upsert({
+            where: {
+                userId: discordId
+            },
+            update: {
+                repostCount: {
+                    increment: 1
+                }
+            },
+            create: {
+                userId: discordId
+            }
+        })
+    } catch (error) {
+        throw handlePrismaError(error);
+    }
+}
+
+export async function addXp(discordId: string, amount: number) {
+    try {
+        return await prisma.user.upsert({
+            where: {
+                discordId: discordId
+            },
+            update: {
+                xp: {
+                    increment: amount
+                }
+            },
+            create: {
+                discordId: discordId,
+                xp: amount
+            }
+        })
+    } catch (error) {
+        throw handlePrismaError(error);
+    }
+}
+
+export async function removeXp(discordId: string, amount: number) 
+{
+    try {
+        return await prisma.user.upsert({
+            where: {
+                discordId: discordId
+            },
+            update: {
+                xp: {
+                    decrement: amount
+                }
+            },
+            create: {
+                discordId: discordId,
+                xp: 0
+            }
+        })
+    } catch (error) {
+        throw handlePrismaError(error);
+    }
+}
+
+export async function getXp(discordId: string) {
+    try {
+        return (await prisma.user.findFirst({
+            where: {
+                discordId: discordId,
+            },
+        }))?.xp;
+    } catch (error) {
+        throw handlePrismaError(error);
+    }
+}

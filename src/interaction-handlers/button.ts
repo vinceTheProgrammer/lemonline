@@ -2,7 +2,8 @@ import { InteractionHandler, InteractionHandlerTypes } from '@sapphire/framework
 import { ActionRowBuilder, ModalBuilder, TextInputBuilder, TextInputStyle, ModalSubmitInteraction, MessageFlags } from 'discord.js';
 import type { ButtonInteraction } from 'discord.js';
 import { handleCommandError } from '../utils/errors.js';
-import { createOnboardingPages, getFormatIntroModal } from '../utils/onboarding.js';
+import { createOnboardingPages } from '../utils/onboarding.js';
+import { getFormatIntroModal } from '../utils/intro.js';
 
 export class ButtonHandler extends InteractionHandler {
   public constructor(ctx: InteractionHandler.LoaderContext, options: InteractionHandler.Options) {
@@ -22,7 +23,6 @@ export class ButtonHandler extends InteractionHandler {
         case 'format-intro':
           const modal = await getFormatIntroModal();
 
-          // Show the modal to the user
           await interaction.showModal(modal);
           break;
       }

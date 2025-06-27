@@ -26,3 +26,18 @@ export function parseMessageLink(link: string): { guildId: string; channelId: st
 
     return { guildId, channelId, messageId };
 }
+
+export function getTimestampFromSnowflake(snowflakeId: string) {
+    const discordEpoch = 1420070400000n;
+    const snowflake = BigInt(snowflakeId);
+    const timestamp = (snowflake >> 22n) + discordEpoch;
+    return new Date(Number(timestamp));
+}
+
+export function canEditMessage(messageId: string) {
+    const createdAt = getTimestampFromSnowflake(messageId);
+    const ageInMs = Date.now() - createdAt.getTime();
+    const daysOld = ageInMs / (1000 * 60 * 60 * 24);
+
+    return daysOld <= 14;
+}

@@ -2,7 +2,8 @@ import type { Command } from "@sapphire/framework";
 import { getErrorEmbed, getVerboseErrorEmbed, getWarningEmbed } from "./embeds.js";
 import { Prisma } from "@prisma/client";
 import { ErrorType } from "../constants/errors.js";
-import { DiscordAPIError, MessageFlags, type ButtonInteraction, type ModalSubmitInteraction } from "discord.js";
+import { ChannelType, DiscordAPIError, MessageFlags, type ButtonInteraction, type ModalSubmitInteraction } from "discord.js";
+import { ChannelId } from "../constants/channels.js";
 
 export class CustomError extends Error {
     originalError: Error | null;
@@ -21,25 +22,45 @@ export class CustomError extends Error {
     }
 }
 
-export function handleCommandError(
+export async function handleCommandError(
     interaction: Command.ChatInputCommandInteraction | Command.ContextMenuCommandInteraction | ModalSubmitInteraction | ButtonInteraction,
     error: unknown
 ) {
+
+    const logErrorToChannel = async (errorMessage: string) => {
+        if (process.env.NODE_ENV == 'development') return;
+        try {
+            const errorChannel = await interaction.client.channels.fetch(ChannelId.ErrorLog);
+            if (errorChannel?.isTextBased() && errorChannel.type == ChannelType.GuildText) {
+                await errorChannel.send({
+                    content: `Error in ${interaction.isCommand() ? interaction.commandName : 'interaction'} (User: ${interaction.user.tag}, ID: ${interaction.user.id}):\n${errorMessage}`,
+                });
+            } else {
+                console.warn(`Channel ${ChannelId.ErrorLog} is not a text-based channel or was not found.`);
+            }
+        } catch (channelError) {
+            console.error(`Failed to send error to log channel ${ChannelId.ErrorLog}:`, channelError);
+        }
+    };
+
     if (error instanceof CustomError) {
         switch (error.errorType) {
             case ErrorType.Error:
+                await logErrorToChannel(`${error.name}: ${error.message}${error.originalError ? `\nOriginal Error: ${error.originalError.message}` : ''}`);
                 if (!interaction.replied && !interaction.deferred) return interaction.reply({ content: '', embeds: [getVerboseErrorEmbed(error)], components: [], files: [], flags: [MessageFlags.Ephemeral]});
                 return interaction.editReply({ content: '', embeds: [getVerboseErrorEmbed(error)], components: [], files: []});
             case ErrorType.Warning:
                 if (!interaction.replied && !interaction.deferred) return interaction.reply({ content: '', embeds: [getWarningEmbed(error.message)], components: [], files: [], flags: [MessageFlags.Ephemeral]});
                 return interaction.editReply({ content: '', embeds: [getWarningEmbed(error.message, error.footer)], components: [], files: [] });
             default:
+                await logErrorToChannel(`${error.name}: ${error.message}`);
                 if (!interaction.replied && !interaction.deferred) return interaction.reply({ content: '', embeds: [getErrorEmbed(error.message)], components: [], files: [], flags: [MessageFlags.Ephemeral]});
                 return interaction.editReply({ content: '', embeds: [getErrorEmbed(error.message)], components: [], files: [] });
         }
 
     } else if (error instanceof DiscordAPIError) {
         const string = `${error.name}: ${error.message}`;
+        await logErrorToChannel(string);
         if (!interaction.replied && !interaction.deferred) return interaction.reply({ content: '', embeds: [getErrorEmbed(string)], components: [], files: [], flags: [MessageFlags.Ephemeral]});
         return interaction.editReply({ content: '', embeds: [getErrorEmbed(string)], components: [], files: [] });
     } else {

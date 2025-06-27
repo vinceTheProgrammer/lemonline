@@ -1,12 +1,13 @@
-import { AttachmentBuilder, ChannelType, EmbedBuilder, ForumChannel, Message, MessagePayload, ThreadChannel, WebhookClient, type APIEmbedField, type Guild, type GuildMember, type WebhookMessageCreateOptions, type WebhookMessageEditOptions } from "discord.js";
+import { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, ChannelType, EmbedBuilder, ForumChannel, Message, MessagePayload, ModalBuilder, TextInputBuilder, TextInputStyle, ThreadChannel, WebhookClient, type APIEmbedField, type Guild, type GuildMember, type WebhookMessageCreateOptions, type WebhookMessageEditOptions } from "discord.js";
 import { ChannelId } from "../constants/channels.js";
 import { CustomError } from "./errors.js";
 import { ErrorType } from "../constants/errors.js";
-import { findByDiscordIdWithIntro, updateIntroByDiscordIdAndIntro } from "./database.js";
+import { findByDiscordIdWithIntro, incrementIntroRepostCount, updateIntroByDiscordIdAndIntro } from "./database.js";
 import type { Prisma } from "@prisma/client";
 import { getIntroWebhookClient } from "./webhooks.js";
-import { isMessageInstance } from "@sapphire/discord.js-utilities";
+import { isMessageInstance, MessageBuilder } from "@sapphire/discord.js-utilities";
 import { container } from "@sapphire/framework";
+import { canEditMessage } from "./messages.js";
 
 export async function syncIntroPost(member: GuildMember, guild: Guild) {
     try {
@@ -27,7 +28,7 @@ export async function syncIntroPost(member: GuildMember, guild: Guild) {
                 return;
             }
 
-            await editIntroPost(member, guild, message);
+            await editIntroPost(member, guild, message, channel.id);
             return;
 
         } else {
@@ -40,23 +41,45 @@ export async function syncIntroPost(member: GuildMember, guild: Guild) {
     }
 }
 
-async function editIntroPost(member: GuildMember, guild: Guild, message: Message) {
+async function repostIntroPost(member: GuildMember, guild: Guild, message: Message) {
+    try {
+        const threadChannel = message.channel;
+        if (!threadChannel) throw new CustomError("No thread associated with the old intro message when trying to delete and repost intro.", ErrorType.Error);
+        await threadChannel.delete();
+        await incrementIntroRepostCount(member.id);
+        await createIntroPost(member, guild);
+    } catch (err) {
+        throw err;
+    }
+}
+
+async function editIntroPost(member: GuildMember, guild: Guild, message: Message, threadId: string) {
     try {
         const webhook: WebhookClient = await getIntroWebhookClient();
 
-    
+        const editable = canEditMessage(message.id);
+        if (!editable) {
+            await repostIntroPost(member, guild, message);
+            return;
+        }
 
-        const payload : WebhookMessageCreateOptions= await getIntroMessagePayload(member, guild);
+        const prePayload : WebhookMessageCreateOptions = await getIntroMessagePayload(member, guild);
 
+        let payloadConvert = prePayload;
+        payloadConvert.threadId = threadId;
+        delete payloadConvert['threadName'];
 
-        console.log(message);
-
-        console.log("isMessageInstance --------> ", isMessageInstance(message))
+        const payload : WebhookMessageEditOptions = {
+            threadId: threadId,
+            content: prePayload.content,
+            embeds: prePayload.embeds,
+            components: prePayload.components
+        };
 
         if (!message.inGuild()) throw new CustomError("Message attempting to be edited is not in guild.", ErrorType.Error);
-        await webhook.editMessage(message, payload as WebhookMessageEditOptions)
+        await webhook.editMessage(message, payload)
     } catch (err) {
-        console.error(err);
+        throw err;
     }
 }
 
@@ -137,4 +160,78 @@ async function getIntroMessagePayload(member: GuildMember, guild: Guild) : Promi
     } catch (err) {
         throw err;
     }
+}
+
+export async function getSetIntroButton() : Promise<MessageBuilder> {
+
+    const button = new ButtonBuilder()
+        .setCustomId('format-intro')
+        .setEmoji('✍')
+        .setLabel("Set Your Public Introduction")
+        .setStyle(ButtonStyle.Primary)
+
+    const components = new ActionRowBuilder<ButtonBuilder>()
+        .addComponents([button])
+
+    const message = new MessageBuilder()
+        .setComponents([components])
+
+    return message;
+}
+
+export async function getFormatIntroModal() : Promise<ModalBuilder> {
+    const modal = new ModalBuilder()
+        .setCustomId('format-intro-modal')
+        .setTitle('Set Public Introduction');
+    
+    // Add a text input field
+    const usernameInput = new TextInputBuilder()
+        .setCustomId('username')
+        .setLabel('Username')
+        .setStyle(TextInputStyle.Short)
+        .setMaxLength(20)
+        .setRequired(true);
+
+        // Add a text input field
+    const descriptionInput = new TextInputBuilder()
+        .setCustomId('description')
+        .setLabel('Briefly describe yourself')
+        .setMaxLength(250)
+        .setStyle(TextInputStyle.Paragraph)
+        .setRequired(true);
+
+    const interestsInput = new TextInputBuilder()
+        .setCustomId('interests')
+        .setLabel('Briefly describe your interests/hobbies')
+        .setMaxLength(250)
+        .setStyle(TextInputStyle.Paragraph)
+        .setRequired(true);
+
+    const socialsInput1 = new TextInputBuilder()
+        .setCustomId('social1')
+        .setLabel('Social 1')
+        .setStyle(TextInputStyle.Short)
+        .setRequired(false);
+
+    const socialsInput2 = new TextInputBuilder()
+        .setCustomId('social2')
+        .setLabel('Social 2')
+        .setStyle(TextInputStyle.Short)
+        .setRequired(false);
+
+
+    // Build action row for the input
+    const actionRow = new ActionRowBuilder<TextInputBuilder>().addComponents(usernameInput);
+    const actionRow2 = new ActionRowBuilder<TextInputBuilder>().addComponents(descriptionInput);
+    const actionRow3 = new ActionRowBuilder<TextInputBuilder>().addComponents(interestsInput);
+    const actionRow4 = new ActionRowBuilder<TextInputBuilder>().addComponents(socialsInput1);
+    const actionRow5 = new ActionRowBuilder<TextInputBuilder>().addComponents(socialsInput2);
+
+
+
+
+    // Add the action row to the modal
+    modal.addComponents([actionRow, actionRow2, actionRow3, actionRow4, actionRow5]);
+
+    return modal;
 }

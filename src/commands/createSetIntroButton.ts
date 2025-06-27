@@ -2,17 +2,14 @@ import { Command } from '@sapphire/framework';
 import { ChannelType, ForumChannel, AttachmentBuilder, ChannelFlags, MessageFlags } from 'discord.js';
 import { CustomError, handleCommandError } from '../utils/errors.js';
 import { ErrorType } from '../constants/errors.js';
-import { parseEmbeds } from '../utils/embeds.js';
-import { getAttachments } from '../utils/attachments.js';
-import { parseComponents } from '../utils/components.js';
-import { getOnboardingButton } from '../utils/onboarding.js';
+import { getSetIntroButton } from '../utils/intro.js';
 
-export class CreateOnboardingCommand extends Command {
+export class CreateSetIntroButtonCommand extends Command {
     public constructor(context: Command.Context, options: Command.Options) {
         super(context, {
             ...options,
-            name: 'create-onboarding-button',
-            description: 'Creates an instance of the onboarding button.',
+            name: 'create-set-intro-button',
+            description: 'Creates an instance of the set intro button.',
             preconditions: ['StaffOnly']
         });
     }
@@ -25,7 +22,7 @@ export class CreateOnboardingCommand extends Command {
                 .addChannelOption((option) =>
                     option
                         .setName('channel')
-                        .setDescription('The channel to create the onboarding button in.')
+                        .setDescription('The channel to create the set intro button in.')
                         .addChannelTypes(ChannelType.GuildText, ChannelType.PublicThread, ChannelType.PrivateThread)
                         .setRequired(true)
                 ),
@@ -44,9 +41,9 @@ export class CreateOnboardingCommand extends Command {
             if (isSendableChannel) {
                 // Cast channel to a sendable type
                 const textChannel = channel as Extract<typeof channel,{ send: (options: any) => Promise<any> }>;
-                const messageBuilder = await getOnboardingButton();
+                const messageBuilder = await getSetIntroButton();
                 await textChannel.send(messageBuilder);
-                return interaction.editReply({ content: `Onboarding button created in ${channel.name}.`});
+                return interaction.editReply({ content: `Set intro button created in ${channel.name}.`});
             } else {
                 throw new CustomError('Unhandled channel type.', ErrorType.Error);
             }

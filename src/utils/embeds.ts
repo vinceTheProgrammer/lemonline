@@ -2,8 +2,9 @@ import { EmbedBuilder, GuildMember, type APIEmbed } from 'discord.js';
 import { Color } from '../constants/colors.js';
 import { CustomError } from './errors.js';
 import { ErrorType } from '../constants/errors.js';
-import { findByDiscordId, initUser } from './database.js';
+import { findByDiscordId, getXp, initUser } from './database.js';
 import { truncateString } from './format.js';
+import { getDeltaXp, getLevelFromXp, getRelativeXp } from './xp.js';
 
 export function getErrorEmbed(error: string) {
     return new EmbedBuilder()
@@ -71,7 +72,7 @@ export function parseEmbeds(rawEmbeds: string | undefined): APIEmbed[] | undefin
     }
 }
 
-export async function getProfileEmbed(member: GuildMember) {
+export async function getLevelEmbed(member: GuildMember) {
 
     let user = await findByDiscordId(member.id);
 
@@ -79,36 +80,43 @@ export async function getProfileEmbed(member: GuildMember) {
 
     if (!user) throw new CustomError("User not found in database.", ErrorType.Error, null);
 
+    const level = getLevelFromXp(user.xp);
+
+    const relativeXp = getRelativeXp(user.xp, level);
+
+    const neededXp = getDeltaXp(level);
+
     const fields = [
         {
             name: "Level",
-            value: `${user.level}`,
+            value: `${level}`,
             inline: false
         },
         {
-            name: "XP",
+            name: `Level XP`,
+            value: `${relativeXp} / ${neededXp}`,
+            inline: false
+        },
+        {
+            name: "Total XP",
             value: `${user.xp}`,
             inline: false
         },
-        {
-            name: `Message Count`,
-            value: `${user.messageCount}`,
-            inline: false
-        }
     ]
 
     let embed = new EmbedBuilder()
-        .setAuthor({
-            name: truncateString(`@${member.user.username}`, 256),
-        })
+        // .setAuthor({
+        //     name: truncateString(`@${member.user.username}`, 256),
+        // })
         .addFields(fields)
         .setThumbnail(member.displayAvatarURL() ?? member.avatarURL() ?? member.avatar)
         .setColor(member.user.accentColor ?? member.displayColor ?? 'Blurple')
-        .setFooter({
-            text: truncateString(`added to database on ${user.createdAt.toDateString()}`, 64),
-        });
+        // .setFooter({
+        //     text: truncateString(`added to database on ${user.createdAt.toDateString()}`, 64),
+        // });
 
     if (member.nickname) embed.setTitle(truncateString(member.nickname, 256));
+    else embed.setTitle(truncateString(member.user.username, 256))
 
     return embed;
 }

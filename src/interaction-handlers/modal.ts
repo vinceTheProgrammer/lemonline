@@ -5,6 +5,8 @@ import { verifyMember } from '../utils/roles.js';
 import { isGuildMember } from '@sapphire/discord.js-utilities';
 import { ErrorType } from '../constants/errors.js';
 import { formatIntroModalSubmit } from '../utils/interactions.js';
+import type { Prisma } from '@prisma/client';
+import { syncIntroPost } from '../utils/intro.js';
 
 export class ModalSubmitHandler extends InteractionHandler {
   public constructor(ctx: InteractionHandler.LoaderContext, options: InteractionHandler.Options) {
@@ -18,11 +20,26 @@ export class ModalSubmitHandler extends InteractionHandler {
     try {
       await interaction.deferReply({flags: [MessageFlags.Ephemeral]})
       
-      const lemon = interaction.fields.getTextInputValue('temp-field-1');
+      const username = interaction.fields.getTextInputValue('username');
+      const description = interaction.fields.getTextInputValue('description');
+
+      const interests = interaction.fields.getTextInputValue('interests');
+      const social1 = interaction.fields.getTextInputValue('social1');
+      const social2 = interaction.fields.getTextInputValue('social2');
+
+      const introUpdateInput : Prisma.IntroUpdateInput = {
+        username,
+        description,
+        interests
+      }
+
 
       let member = interaction.member;
       if (!member || !isGuildMember(member)) throw new CustomError("Failed to process verify modal. interaction.member is null or is not a guild member.", ErrorType.Error, null);
-      await formatIntroModalSubmit(interaction, lemon);
+      const guild = interaction.guild;
+      if (!guild) throw new CustomError("Guild is null", ErrorType.Error);
+      await formatIntroModalSubmit(interaction, introUpdateInput);
+      await syncIntroPost(member, guild);
     } catch (error) {
       handleCommandError(interaction, error);
     }
