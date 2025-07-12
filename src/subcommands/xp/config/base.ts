@@ -31,23 +31,40 @@ export function scXpConfigBase(builder: SlashCommandSubcommandGroupBuilder) {
 
 export async function chatInputBaseReal(interaction: Command.ChatInputCommandInteraction) {
     try {
-        let channel = interaction.options.getChannel('channel');
-        let multiplier = interaction.options.getInteger('amount', true);
-        let expiration = interaction.options.getString('event');
+            let channel = interaction.options.getChannel('channel');
+            let amount = interaction.options.getInteger('amount', true);
+            let event = interaction.options.getString('event');
 
-        await interaction.deferReply({flags: [MessageFlags.Ephemeral]});
+            if (!channel) {
+                const interactionChannel = interaction.channel;
+                if (!interactionChannel) throw new CustomError("Channel argument not supplied and the channel related to this interaction is not defined.", ErrorType.Error);
+                if (!(interactionChannel.type == ChannelType.GuildText)) throw new CustomError("Channel argument not supplied and the channel related to this interaction is not a guild text channel.", ErrorType.Error);
+                channel = interactionChannel;
+            }
+        
+            if (!event) {
+                if (channel.type == ChannelType.GuildForum) {
+                    event = "threadCreate";
+                } else {
+                    event = "messageCreate";
+                }
+            }
 
-        if (!channel) {
-            const interactionChannel = interaction.channel;
-            if (!interactionChannel) throw new CustomError("Channel argument not supplied and the channel related to this interaction is not defined.", ErrorType.Error);
-            if (!(interactionChannel.type == ChannelType.GuildText)) throw new CustomError("Channel argument not supplied and the channel related to this interaction is not a guild text channel.", ErrorType.Error);
-            channel = interactionChannel;
+            await interaction.deferReply({flags: [MessageFlags.Ephemeral]});
+
+            switch (event) {
+                case "messageCreate":
+                    await setChannelBaseMessageXp(channel.id, amount);
+                    break;
+                case "threadCreate":
+                    await setChannelBaseThreadXp(channel.id, amount);
+                    break;
+                default:
+                    await setChannelBaseMessageXp(channel.id, amount);    
+            }
+            
+            return interaction.editReply({ content: `Successfully set **${amount}** xp per message in <#${channel.id}>.`});
+        } catch (error) {
+            handleCommandError(interaction, error);
         }
-
-        await setChannelMultiplier(channel.id, multiplier, expirationDate);
-
-        return interaction.editReply({ content: `Successfully set **${multiplier}**x multiplier for all xp gain in <#${channel.id}>.${expirationString}`});
-    } catch (error) {
-        handleCommandError(interaction, error);
-    }
 }
