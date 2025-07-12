@@ -18,6 +18,14 @@ model User {
   intro        Intro?
 }
 
+model ChannelXpSettings {
+  channelId            String    @id
+  baseMessageCreate    Int       @default(0)
+  baseThreadCreate     Int       @default(0)
+  multiplier           Float     @default(1)
+  multiplierExpiration DateTime?
+}
+
 model Intro {
   id            Int               @id @default(autoincrement())
   username      String?

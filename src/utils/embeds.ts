@@ -3,8 +3,10 @@ import { Color } from '../constants/colors.js';
 import { CustomError } from './errors.js';
 import { ErrorType } from '../constants/errors.js';
 import { findByDiscordId, getXp, initUser } from './database.js';
-import { truncateString } from './format.js';
+import { getDiscordRelativeTime, getSign, truncateString } from './format.js';
 import { getDeltaXp, getLevelFromXp, getRelativeXp } from './xp.js';
+import type { ChannelXpSettings } from '@prisma/client';
+import { hasDatePassed } from './time.js';
 
 export function getErrorEmbed(error: string) {
     return new EmbedBuilder()
@@ -117,6 +119,113 @@ export async function getLevelEmbed(member: GuildMember) {
 
     if (member.nickname) embed.setTitle(truncateString(member.nickname, 256));
     else embed.setTitle(truncateString(member.user.username, 256))
+
+    return embed;
+}
+
+export async function getChannelXpSettingsEmbed(channelXpSettings: ChannelXpSettings | null) {
+    if (channelXpSettings == null) {
+        return new EmbedBuilder()
+        .setColor("#ff0000")
+        .setTitle("No xp settings are set for the provided channel.");
+    }
+
+    const msgCreateXp = channelXpSettings.baseMessageCreate;
+    const threadCreateXp = channelXpSettings.baseThreadCreate;
+    let mult = channelXpSettings.multiplier;
+    const multExp = channelXpSettings.multiplierExpiration;
+
+    const fields = [
+        {
+            name: "On message create",
+            value: `${getSign(msgCreateXp)}${Math.abs(msgCreateXp)} xp`,
+            inline: true
+        },
+        {
+            name: `On post/thread create`,
+            value: `${getSign(threadCreateXp)}${Math.abs(threadCreateXp)} xp`,
+            inline: true
+        },
+        {
+            name: '\u200b',
+            value: '\u200b',
+            inline: false
+        }
+    ]
+
+    if (multExp) {
+        if (hasDatePassed(multExp)) {
+            fields.push({
+                name: `Xp gain multiplier`,
+                value: `~~x${mult}~~ x1`,
+                inline: true
+            },
+            {
+                name: "Boost expiration",
+                value: `${getDiscordRelativeTime(multExp)} (EXPIRED)`,
+                inline: true
+            },
+            {
+                name: '\u200b',
+                value: '\u200b',
+                inline: false
+            })
+            mult = 1;
+        } else {
+            fields.push({
+                name: `Xp gain multiplier`,
+                value: `x${mult}`,
+                inline: true
+            },
+            {
+                name: "Boost expiration",
+                value: `${getDiscordRelativeTime(multExp)}`,
+                inline: true
+            },
+            {
+                name: '\u200b',
+                value: '\u200b',
+                inline: false
+            })
+        }
+    } else {
+        fields.push({
+            name: `Xp gain multiplier`,
+            value: `x${mult}`,
+            inline: true
+        },
+        {
+            name: "Boost expiration",
+            value: `Permanent`,
+            inline: true
+        },
+        {
+            name: '\u200b',
+            value: '\u200b',
+            inline: false
+        })
+    }
+
+    const finalMsgCreateXp = Math.round(msgCreateXp * mult);
+    const finalThreadCreateXp = Math.round(threadCreateXp * mult);
+
+    fields.push({
+        name: `Message xp gain after multiplier`,
+        value: `${getSign(finalMsgCreateXp)}${Math.abs(finalMsgCreateXp)} xp`,
+        inline: true
+    },
+    {
+        name: `Post/thread xp gain after multiplier`,
+        value: `${getSign(finalThreadCreateXp)}${Math.abs(finalThreadCreateXp)} xp`,
+        inline: true
+    });
+
+    let embed = new EmbedBuilder()
+        .setDescription(`<#${channelXpSettings.channelId}>`)
+        .addFields(fields)
+        .setColor("#6600ff");
+
+    embed.setTitle("XP Settings Summary");
 
     return embed;
 }

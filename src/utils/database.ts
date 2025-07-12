@@ -221,3 +221,99 @@ export async function getXp(discordId: string) {
         throw handlePrismaError(error);
     }
 }
+
+export async function setXp(discordId: string, amount: number) {
+    try {
+        return await prisma.user.upsert({
+            where: {
+                discordId: discordId
+            },
+            update: {
+                xp: amount
+            },
+            create: {
+                discordId: discordId,
+                xp: amount
+            }
+        })
+    } catch (error) {
+        throw handlePrismaError(error);
+    }
+}
+
+export async function getChannelXpSettings(channelId: string) {
+    try {
+        return await prisma.channelXpSettings.findFirst({
+            where: {
+                channelId: channelId,
+            },
+        });
+    } catch (error) {
+        throw handlePrismaError(error);
+    }
+}
+
+export async function setChannelBaseMessageXp(channelId: string, amount: number) {
+    try {
+        return await prisma.channelXpSettings.upsert({
+            where: {
+                channelId: channelId,
+            },
+            create: {
+                channelId: channelId,
+                baseMessageCreate: amount,
+                baseThreadCreate: 0,
+                multiplier: 1,
+            },
+            update: {
+                baseMessageCreate: amount
+            }
+        });
+    } catch (error) {
+        throw handlePrismaError(error);
+    }
+}
+
+export async function setChannelBaseThreadXp(channelId: string, amount: number) {
+    try {
+        return await prisma.channelXpSettings.upsert({
+            where: {
+                channelId: channelId,
+            },
+            create: {
+                channelId: channelId,
+                baseMessageCreate: 0,
+                baseThreadCreate: amount,
+                multiplier: 1,
+            },
+            update: {
+                baseThreadCreate: amount
+            }
+        });
+    } catch (error) {
+        throw handlePrismaError(error);
+    }
+}
+
+export async function setChannelMultiplier(channelId: string, amount: number, expiration?: Date) {
+    try {
+        return await prisma.channelXpSettings.upsert({
+            where: {
+                channelId: channelId,
+            },
+            create: {
+                channelId: channelId,
+                baseMessageCreate: 0,
+                baseThreadCreate: 0,
+                multiplier: amount,
+                multiplierExpiration: expiration
+            },
+            update: {
+                multiplier: amount,
+                multiplierExpiration: expiration
+            }
+        });
+    } catch (error) {
+        throw handlePrismaError(error);
+    }
+}
