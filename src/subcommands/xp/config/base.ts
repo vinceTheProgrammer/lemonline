@@ -6,7 +6,7 @@ export function scXpConfigBase(builder: SlashCommandSubcommandGroupBuilder) {
             .setName('channel-base')
             .setDescription('Set base xp gained when specified user event occurs in the specified channel.')
             .addIntegerOption((option) => 
-                option.setName('amount').setDescription('Amount to set the user\'s xp to.').setRequired(true))
+                option.setName('amount').setDescription('Amount of xp to award when the specified event occurs.').setRequired(true))
             .addStringOption(option => 
                 option.addChoices([
                 {
@@ -19,7 +19,7 @@ export function scXpConfigBase(builder: SlashCommandSubcommandGroupBuilder) {
                 }
             ])
                 .setName("event")
-                .setDescription("The event to award xp upon emission.")
+                .setDescription("The event to award xp upon.")
                 .setRequired(false))
             .addChannelOption(option =>
                 option.setName("channel")
@@ -32,8 +32,8 @@ export function scXpConfigBase(builder: SlashCommandSubcommandGroupBuilder) {
 export async function chatInputBaseReal(interaction: Command.ChatInputCommandInteraction) {
     try {
         let channel = interaction.options.getChannel('channel');
-        let multiplier = interaction.options.getNumber('multiplier', true);
-        let expiration = interaction.options.getString('expiration');
+        let multiplier = interaction.options.getInteger('amount', true);
+        let expiration = interaction.options.getString('event');
 
         await interaction.deferReply({flags: [MessageFlags.Ephemeral]});
 
@@ -42,13 +42,6 @@ export async function chatInputBaseReal(interaction: Command.ChatInputCommandInt
             if (!interactionChannel) throw new CustomError("Channel argument not supplied and the channel related to this interaction is not defined.", ErrorType.Error);
             if (!(interactionChannel.type == ChannelType.GuildText)) throw new CustomError("Channel argument not supplied and the channel related to this interaction is not a guild text channel.", ErrorType.Error);
             channel = interactionChannel;
-        }
-
-        let expirationString = '';
-        let expirationDate = undefined;
-        if (expiration) {
-            expirationDate = parseRelativeDate(expiration);
-            expirationString = `\nThis boost is set to expire ${getDiscordRelativeTime(expirationDate)}`;
         }
 
         await setChannelMultiplier(channel.id, multiplier, expirationDate);
