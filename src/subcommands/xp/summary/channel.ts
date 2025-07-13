@@ -1,3 +1,10 @@
+import type { Command } from "@sapphire/framework";
+import { SlashCommandSubcommandGroupBuilder, MessageFlags, ChannelType } from "discord.js";
+import { ErrorType } from "../../../constants/errors.js";
+import { getChannelXpSettings } from "../../../utils/database.js";
+import { getChannelXpSettingsEmbed } from "../../../utils/embeds.js";
+import { CustomError, handleCommandError } from "../../../utils/errors.js";
+
 export function scXpSummaryChannel(builder: SlashCommandSubcommandGroupBuilder) {
     return builder.addSubcommand((command) =>
         command
@@ -18,30 +25,23 @@ export function scXpSummaryChannel(builder: SlashCommandSubcommandGroupBuilder) 
 
 export async function chatInputChannelReal(interaction: Command.ChatInputCommandInteraction) {
     try {
-        let channel = interaction.options.getChannel('channel');
-        let multiplier = interaction.options.getNumber('multiplier', true);
-        let expiration = interaction.options.getString('expiration');
-
-        await interaction.deferReply({flags: [MessageFlags.Ephemeral]});
-
-        if (!channel) {
-            const interactionChannel = interaction.channel;
-            if (!interactionChannel) throw new CustomError("Channel argument not supplied and the channel related to this interaction is not defined.", ErrorType.Error);
-            if (!(interactionChannel.type == ChannelType.GuildText)) throw new CustomError("Channel argument not supplied and the channel related to this interaction is not a guild text channel.", ErrorType.Error);
-            channel = interactionChannel;
-        }
-
-        let expirationString = '';
-        let expirationDate = undefined;
-        if (expiration) {
-            expirationDate = parseRelativeDate(expiration);
-            expirationString = `\nThis boost is set to expire ${getDiscordRelativeTime(expirationDate)}`;
-        }
-
-        await setChannelMultiplier(channel.id, multiplier, expirationDate);
-
-        return interaction.editReply({ content: `Successfully set **${multiplier}**x multiplier for all xp gain in <#${channel.id}>.${expirationString}`});
-    } catch (error) {
-        handleCommandError(interaction, error);
-    }
+                let channel = interaction.options.getChannel('channel');
+    
+                await interaction.deferReply({flags: [MessageFlags.Ephemeral]});
+    
+                if (!channel) {
+                    const interactionChannel = interaction.channel;
+                    if (!interactionChannel) throw new CustomError("Channel argument not supplied and the channel related to this interaction is not defined.", ErrorType.Error);
+                    if (!(interactionChannel.type == ChannelType.GuildText)) throw new CustomError("Channel argument not supplied and the channel related to this interaction is not a guild text channel.", ErrorType.Error);
+                    channel = interactionChannel;
+                }
+    
+                const channelXpSettings = await getChannelXpSettings(channel.id);
+    
+                const embed = await getChannelXpSettingsEmbed(channelXpSettings);
+    
+                return interaction.editReply({ embeds: [embed]});
+            } catch (error) {
+                handleCommandError(interaction, error);
+            }
 }

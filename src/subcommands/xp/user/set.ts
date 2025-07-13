@@ -1,3 +1,8 @@
+import type { Command } from "@sapphire/framework";
+import { SlashCommandSubcommandGroupBuilder, MessageFlags } from "discord.js";
+import { setXp } from "../../../utils/database.js";
+import { handleCommandError } from "../../../utils/errors.js";
+
 export function scXpUserSet(builder: SlashCommandSubcommandGroupBuilder) {
     return builder.addSubcommand((command) =>
         command
@@ -18,29 +23,15 @@ export function scXpUserSet(builder: SlashCommandSubcommandGroupBuilder) {
 
 export async function chatInputSetReal(interaction: Command.ChatInputCommandInteraction) {
     try {
-        let channel = interaction.options.getChannel('channel');
-        let multiplier = interaction.options.getNumber('multiplier', true);
-        let expiration = interaction.options.getString('expiration');
+        const user = interaction.options.getUser('user', true);
+        const amount = interaction.options.getInteger('amount', true);
+
 
         await interaction.deferReply({flags: [MessageFlags.Ephemeral]});
 
-        if (!channel) {
-            const interactionChannel = interaction.channel;
-            if (!interactionChannel) throw new CustomError("Channel argument not supplied and the channel related to this interaction is not defined.", ErrorType.Error);
-            if (!(interactionChannel.type == ChannelType.GuildText)) throw new CustomError("Channel argument not supplied and the channel related to this interaction is not a guild text channel.", ErrorType.Error);
-            channel = interactionChannel;
-        }
+        await setXp(user.id, amount);
 
-        let expirationString = '';
-        let expirationDate = undefined;
-        if (expiration) {
-            expirationDate = parseRelativeDate(expiration);
-            expirationString = `\nThis boost is set to expire ${getDiscordRelativeTime(expirationDate)}`;
-        }
-
-        await setChannelMultiplier(channel.id, multiplier, expirationDate);
-
-        return interaction.editReply({ content: `Successfully set **${multiplier}**x multiplier for all xp gain in <#${channel.id}>.${expirationString}`});
+        return interaction.editReply({ content: `Successfully set <@${user.id}>'s xp to ${amount}.`});
     } catch (error) {
         handleCommandError(interaction, error);
     }

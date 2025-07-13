@@ -8,20 +8,16 @@ import { ErrorType } from "../../../constants/errors.js";
 
 export function scXpConfigBoost(builder: SlashCommandSubcommandGroupBuilder) {
     return builder.addSubcommand((command) =>
-        command
-            .setName('channel-boost')
-            .setDescription('Set xp gain multiplier for when any user event occurs in the specified channel.')
-            .addNumberOption((option) => 
-                option.setName('multiplier').setDescription('Number to multiply all xp gain by. Xp gain is rounded to nearest integer.').setRequired(true))
-            .addChannelOption(option =>
-                option.setName("channel")
-                .setDescription("Channel to apply this xp multiplier to. Category channel will apply to all subchannels.")
-                .setRequired(false)
+        command.setName('channel-boost').setDescription('Set an xp gain multiplier within the specified channel.')
+            .addNumberOption((option) =>
+                option.setName('multiplier').setDescription('Number to multiply all xp gain by. Xp gain is rounded to nearest integer.').setRequired(true)
             )
-            .addStringOption(option =>
-                option.setName("")
-            )
-        )
+            .addChannelOption((option) =>
+                option.setName('channel').setDescription('Channel to apply this base xp setting to. Category channel will apply to all subchannels.').setRequired(false)
+                )
+            .addStringOption((option) => 
+            option.setName('expiration').setDescription("How long this multiplier will last before resetting to 1x.").setRequired(false)
+        ))
 }
 
 export async function chatInputBoostReal(interaction: Command.ChatInputCommandInteraction) {

@@ -1,4 +1,8 @@
-import type { SlashCommandSubcommandGroupBuilder } from "discord.js";
+import type { Command } from "@sapphire/framework";
+import { ChannelType, MessageFlags, type SlashCommandSubcommandGroupBuilder } from "discord.js";
+import { CustomError, handleCommandError } from "../../../utils/errors.js";
+import { setChannelBaseMessageXp, setChannelBaseThreadXp } from "../../../utils/database.js";
+import { ErrorType } from "../../../constants/errors.js";
 
 export function scXpConfigBase(builder: SlashCommandSubcommandGroupBuilder) {
     return builder.addSubcommand((command) =>

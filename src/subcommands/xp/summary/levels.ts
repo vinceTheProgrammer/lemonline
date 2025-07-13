@@ -1,3 +1,8 @@
+import type { Command } from "@sapphire/framework";
+import { SlashCommandSubcommandGroupBuilder, MessageFlags } from "discord.js";
+import { handleCommandError } from "../../../utils/errors.js";
+import { handlePrintLevelsInteraction } from "../../../utils/interactions.js";
+
 export function scXpSummaryLevels(builder: SlashCommandSubcommandGroupBuilder) {
     return builder.addSubcommand((command) =>
         command
@@ -18,29 +23,13 @@ export function scXpSummaryLevels(builder: SlashCommandSubcommandGroupBuilder) {
 
 export async function chatInputLevelsReal(interaction: Command.ChatInputCommandInteraction) {
     try {
-        let channel = interaction.options.getChannel('channel');
-        let multiplier = interaction.options.getNumber('multiplier', true);
-        let expiration = interaction.options.getString('expiration');
+        const level = interaction.options.getNumber('level');
 
-        await interaction.deferReply({flags: [MessageFlags.Ephemeral]});
-
-        if (!channel) {
-            const interactionChannel = interaction.channel;
-            if (!interactionChannel) throw new CustomError("Channel argument not supplied and the channel related to this interaction is not defined.", ErrorType.Error);
-            if (!(interactionChannel.type == ChannelType.GuildText)) throw new CustomError("Channel argument not supplied and the channel related to this interaction is not a guild text channel.", ErrorType.Error);
-            channel = interactionChannel;
-        }
-
-        let expirationString = '';
-        let expirationDate = undefined;
-        if (expiration) {
-            expirationDate = parseRelativeDate(expiration);
-            expirationString = `\nThis boost is set to expire ${getDiscordRelativeTime(expirationDate)}`;
-        }
-
-        await setChannelMultiplier(channel.id, multiplier, expirationDate);
-
-        return interaction.editReply({ content: `Successfully set **${multiplier}**x multiplier for all xp gain in <#${channel.id}>.${expirationString}`});
+        await interaction.deferReply({ flags: [MessageFlags.Ephemeral] });
+        if (level)
+            await handlePrintLevelsInteraction(interaction, level);
+        else
+            await handlePrintLevelsInteraction(interaction, 100);
     } catch (error) {
         handleCommandError(interaction, error);
     }
