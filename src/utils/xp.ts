@@ -1,8 +1,16 @@
+import { container } from "@sapphire/framework";
+import { getServerXpSettings } from "./database.js";
+
 export const xpCache: number[] = []; // xpCache[level] = total XP to reach that level
 xpCache[1] = 0; // Level 1 starts at 0 XP
 
-export const totalXpFormula = (level: number): number =>
-  100 * (level - 1) * level / 2;
+const storedFormula = (await getServerXpSettings('1376370662360481812'))?.levelFormula; // TODO?
+
+export const totalXpFormula = (level: number): number => {
+  if (!storedFormula) return 100 * (level - 1) * level / 2;
+  const fn = new Function("level", `return ${storedFormula};`);
+  return fn(level);
+}
 
 export const getTotalXp = (level: number): number => {
   if (xpCache[level] != null && xpCache[level] !== undefined) {

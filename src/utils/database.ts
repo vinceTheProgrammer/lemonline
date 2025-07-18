@@ -1,7 +1,7 @@
 import type { Collection, GuildMember } from 'discord.js';
 import prisma from '../utils/prisma.js';
 import { handlePrismaError } from './errors.js';
-import type { Intro, Prisma } from '@prisma/client';
+import { Prisma, type Intro } from '@prisma/client';
 
 export async function logMessage(discordId: string, date?: Date) {
     try {
@@ -253,6 +253,18 @@ export async function getChannelXpSettings(channelId: string) {
     }
 }
 
+export async function getAllChannelXpSettings() {
+    try {
+        return await prisma.channelXpSettings.findMany({
+            where: {
+                
+            },
+        });
+    } catch (error) {
+        throw handlePrismaError(error);
+    }
+}
+
 export async function setChannelBaseMessageXp(channelId: string, amount: number) {
     try {
         return await prisma.channelXpSettings.upsert({
@@ -295,7 +307,7 @@ export async function setChannelBaseThreadXp(channelId: string, amount: number) 
     }
 }
 
-export async function setChannelMultiplier(channelId: string, amount: number, expiration?: Date) {
+export async function setChannelMultiplier(channelId: string, amount: number, expiration: Date | null) {
     try {
         return await prisma.channelXpSettings.upsert({
             where: {
@@ -311,6 +323,156 @@ export async function setChannelMultiplier(channelId: string, amount: number, ex
             update: {
                 multiplier: amount,
                 multiplierExpiration: expiration
+            }
+        });
+    } catch (error) {
+        throw handlePrismaError(error);
+    }
+}
+
+export async function getLevelRolesByLevel(level: number) {
+    try {
+        return await prisma.levelRole.findMany({
+            where: {
+                levelId: level,
+            },
+        })
+    } catch (error) {
+        throw handlePrismaError(error);
+    }
+}
+
+export async function getLevelRolesByRole(roleId: string) {
+    try {
+        return await prisma.levelRole.findMany({
+            where: {
+                roleId: roleId,
+            },
+        })
+    } catch (error) {
+        throw handlePrismaError(error);
+    }
+}
+
+export async function getLevelRole(level: number, roleId: string) {
+    try {
+        return await prisma.levelRole.findFirst({
+            where: {
+                levelId: level, roleId
+            },
+        })
+    } catch (error) {
+        throw handlePrismaError(error);
+    }
+}
+
+export async function addLevelRole(level: number, roleId: string, gained: boolean) {
+    try {
+        return await prisma.levelRole.create({
+            data: {
+              level: { connectOrCreate: {
+                where: {
+                    id: level
+                },
+                create: {
+                    id: level
+                }
+              } },
+              role: { connectOrCreate: {
+                where: {
+                    roleId
+                },
+                create: {
+                    roleId
+                }
+              } },
+              gained,
+            },
+          })
+    } catch (error) {
+        throw handlePrismaError(error); 
+    }
+}
+
+export async function removeLevelRole(level: number, roleId: string) {
+    try {
+        return await prisma.levelRole.delete({
+            where: {
+              levelId_roleId: { levelId: level, roleId },
+            },
+          })
+    } catch (error) {
+        throw handlePrismaError(error);
+    }
+}
+
+export async function removeAllLevelRolesByLevel(level: number) {
+    try {
+        return await prisma.levelRole.deleteMany({
+            where: {
+              levelId: level,
+            },
+          })
+    } catch (error) {
+        throw handlePrismaError(error);
+    }
+}
+
+export async function removeAllLevelRolesByRole(roleId: string) {
+    try {
+        return await prisma.levelRole.deleteMany({
+            where: {
+              roleId,
+            },
+          })
+    } catch (error) {
+        throw handlePrismaError(error);
+    }
+}
+
+export async function getServerXpSettings(guildId: string) {
+    try {
+        return await prisma.serverXpSettings.findFirst({
+            where: {
+                guildId
+            },
+        })
+    } catch (error) {
+        throw handlePrismaError(error);
+    }
+}
+
+export async function setServerXpCooldown(guildId: string, cooldownSeconds: number) {
+    try {
+        return await prisma.serverXpSettings.upsert({
+            where: {
+                guildId,
+            },
+            create: {
+                guildId,
+                cooldownSeconds
+            },
+            update: {
+                cooldownSeconds
+            }
+        });
+    } catch (error) {
+        throw handlePrismaError(error);
+    }
+}
+
+export async function setServerLevelFormula(guildId: string, levelFormula: string) {
+    try {
+        return await prisma.serverXpSettings.upsert({
+            where: {
+                guildId,
+            },
+            create: {
+                guildId,
+                levelFormula
+            },
+            update: {
+                levelFormula
             }
         });
     } catch (error) {

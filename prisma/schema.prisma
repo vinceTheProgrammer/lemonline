@@ -26,6 +26,33 @@ model ChannelXpSettings {
   multiplierExpiration DateTime?
 }
 
+model ServerXpSettings {
+  guildId         String @id
+  cooldownSeconds Int    @default(5)
+  levelFormula    String @default("100 * (level - 1) * level / 2")
+}
+
+model Level {
+  id         Int         @id @default(autoincrement())
+  levelRoles LevelRole[]
+}
+
+model Role {
+  roleId     String      @id
+  levelRoles LevelRole[]
+}
+
+model LevelRole {
+  id      Int     @id @default(autoincrement())
+  level   Level   @relation(fields: [levelId], references: [id])
+  levelId Int
+  role    Role    @relation(fields: [roleId], references: [roleId])
+  roleId  String
+  gained  Boolean
+
+  @@unique([levelId, roleId])
+}
+
 model Intro {
   id            Int               @id @default(autoincrement())
   username      String?

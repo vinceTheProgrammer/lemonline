@@ -4,7 +4,7 @@ import { CustomError } from './errors.js';
 import { ErrorType } from '../constants/errors.js';
 import { findByDiscordId, getXp, initUser } from './database.js';
 import { getDiscordRelativeTime, getSign, truncateString } from './format.js';
-import { getDeltaXp, getLevelFromXp, getRelativeXp } from './xp.js';
+import { getDeltaXp, getLevelFromXp, getRelativeXp, getTotalXp } from './xp.js';
 import type { ChannelXpSettings } from '@prisma/client';
 import { hasDatePassed } from './time.js';
 
@@ -119,6 +119,62 @@ export async function getLevelEmbed(member: GuildMember) {
 
     if (member.nickname) embed.setTitle(truncateString(member.nickname, 256));
     else embed.setTitle(truncateString(member.user.username, 256))
+
+    return embed;
+}
+
+export async function getServerLevelEmbed(level: number, gainedRoles: string[], lostRoles: string[]) {
+
+    const awardString = "- " + gainedRoles.map(roleId => `<@&${roleId}>`).join("\n- ");
+    const revokeString = "- " + lostRoles.map(roleId => `<@&${roleId}>`).join("\n- ");
+
+    const fields = [
+        {
+            name: `Required XP`,
+            value: `${getTotalXp(level)}`,
+            inline: false
+        },
+        {
+            name: "Roles awarded at this level",
+            value: `${awardString}`,
+            inline: false
+        },
+        {
+            name: "Roles revoked at this level",
+            value: `${revokeString}`,
+            inline: false
+        },
+    ]
+
+    let embed = new EmbedBuilder()
+        .addFields(fields)
+        .setColor('Blurple')
+        .setTitle(`Level ${level}`);
+
+
+    return embed;
+}
+
+export async function getServerXpSettingsEmbed(cooldownSeconds: number | undefined, levelFormula: string | undefined) {
+
+    const fields = [
+        {
+            name: `Xp gain cooldown`,
+            value: `${cooldownSeconds ?? 'undefined'} seconds`,
+            inline: false
+        },
+        {
+            name: "Level formula",
+            value: `${levelFormula ?? 'undefined'}`,
+            inline: false
+        }
+    ]
+
+    let embed = new EmbedBuilder()
+        .addFields(fields)
+        .setColor('Blurple')
+        .setTitle(`Server xp settings`);
+
 
     return embed;
 }

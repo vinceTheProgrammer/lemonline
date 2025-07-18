@@ -1,5 +1,5 @@
 import type { Command } from "@sapphire/framework";
-import { ChannelType, MessageFlags, type SlashCommandSubcommandGroupBuilder } from "discord.js";
+import { CategoryChannel, ChannelType, MessageFlags, type SlashCommandSubcommandGroupBuilder } from "discord.js";
 import { CustomError, handleCommandError } from "../../../utils/errors.js";
 import { setChannelBaseMessageXp, setChannelBaseThreadXp } from "../../../utils/database.js";
 import { ErrorType } from "../../../constants/errors.js";
@@ -35,6 +35,8 @@ export function scXpConfigBase(builder: SlashCommandSubcommandGroupBuilder) {
 
 export async function chatInputBaseReal(interaction: Command.ChatInputCommandInteraction) {
     try {
+            await interaction.deferReply({flags: [MessageFlags.Ephemeral]});
+
             let channel = interaction.options.getChannel('channel');
             let amount = interaction.options.getInteger('amount', true);
             let event = interaction.options.getString('event');
@@ -45,30 +47,63 @@ export async function chatInputBaseReal(interaction: Command.ChatInputCommandInt
                 if (!(interactionChannel.type == ChannelType.GuildText)) throw new CustomError("Channel argument not supplied and the channel related to this interaction is not a guild text channel.", ErrorType.Error);
                 channel = interactionChannel;
             }
+
+            const multipleChannels: string[] = [];
         
-            if (!event) {
+            if (!event || event == null) {
                 if (channel.type == ChannelType.GuildForum) {
                     event = "threadCreate";
-                } else {
+                } else if (channel.type == ChannelType.GuildCategory) {
+                    (channel as CategoryChannel).children.cache.forEach(async child => {
+                        if (child.type == ChannelType.GuildForum) {
+                            multipleChannels.push(child.id);
+                            await applyEvent(child.id, amount, "threadCreate");
+                        } else if (child.type == ChannelType.GuildText) {
+                            multipleChannels.push(child.id);
+                            await applyEvent(child.id, amount, "messageCreate");
+                        }                    })
+                } else if (channel.type == ChannelType.GuildText){
                     event = "messageCreate";
+                    await applyEvent(channel.id, amount, event);
+                }
+            } else {
+                if (channel.type == ChannelType.GuildCategory) {
+                    (channel as CategoryChannel).children.cache.forEach(async child => {
+                        multipleChannels.push(child.id);
+                        await applyEvent(child.id, amount, event ?? "messageCreate");
+                    })
+                } else {
+                    await applyEvent(channel.id, amount, event);
                 }
             }
-
-            await interaction.deferReply({flags: [MessageFlags.Ephemeral]});
-
-            switch (event) {
-                case "messageCreate":
-                    await setChannelBaseMessageXp(channel.id, amount);
-                    break;
-                case "threadCreate":
-                    await setChannelBaseThreadXp(channel.id, amount);
-                    break;
-                default:
-                    await setChannelBaseMessageXp(channel.id, amount);    
-            }
             
-            return interaction.editReply({ content: `Successfully set **${amount}** xp per message in <#${channel.id}>.`});
+            if (multipleChannels.length > 0) {
+                let channelsString = '';
+                for (let i = 0; i < multipleChannels.length; i++) {
+                    channelsString += `- <#${multipleChannels[i]}>` + '\n';
+                }
+                if (!event) {
+                    return interaction.editReply({ content: `Successfully set **${amount}** xp per default event for the following channels:\n${channelsString}`});
+                } else {
+                    return interaction.editReply({ content: `Successfully set **${amount}** xp per ${event} event for the following channels:\n${channelsString}`});
+                }
+            } else {
+                return interaction.editReply({ content: `Successfully set **${amount}** xp per ${event} in <#${channel.id}>.`});
+            }
         } catch (error) {
             handleCommandError(interaction, error);
         }
+}
+
+async function applyEvent(channelId: string, amount: number, event: string) {
+    switch (event) {
+        case "messageCreate":
+            await setChannelBaseMessageXp(channelId, amount);
+            break;
+        case "threadCreate":
+            await setChannelBaseThreadXp(channelId, amount);
+            break;
+        default:
+            await setChannelBaseMessageXp(channelId, amount);    
+    }
 }

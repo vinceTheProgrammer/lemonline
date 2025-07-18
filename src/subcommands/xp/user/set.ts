@@ -6,28 +6,24 @@ import { handleCommandError } from "../../../utils/errors.js";
 export function scXpUserSet(builder: SlashCommandSubcommandGroupBuilder) {
     return builder.addSubcommand((command) =>
         command
-            .setName('channel-boost')
-            .setDescription('Set xp gain multiplier for when any user event occurs in the specified channel.')
-            .addNumberOption((option) => 
-                option.setName('multiplier').setDescription('Number to multiply all xp gain by. Xp gain is rounded to nearest integer.').setRequired(true))
-            .addChannelOption(option =>
-                option.setName("channel")
-                .setDescription("Channel to apply this xp multiplier to. Category channel will apply to all subchannels.")
-                .setRequired(false)
-            )
-            .addStringOption(option =>
-                option.setName("")
+            .setName('set')
+            .setDescription('Set the xp of a user.')
+            .addUserOption((option) => 
+                option.setName('user').setDescription('User to set the xp of.').setRequired(true))
+            .addIntegerOption(option =>
+                option.setName("amount")
+                .setDescription("Amount of xp to set the user's xp to.")
+                .setRequired(true)
             )
         )
 }
 
 export async function chatInputSetReal(interaction: Command.ChatInputCommandInteraction) {
     try {
+        await interaction.deferReply({flags: [MessageFlags.Ephemeral]});
+
         const user = interaction.options.getUser('user', true);
         const amount = interaction.options.getInteger('amount', true);
-
-
-        await interaction.deferReply({flags: [MessageFlags.Ephemeral]});
 
         await setXp(user.id, amount);
 

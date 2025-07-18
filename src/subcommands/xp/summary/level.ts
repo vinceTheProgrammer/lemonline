@@ -1,54 +1,35 @@
 import type { Command } from "@sapphire/framework";
 import { SlashCommandSubcommandGroupBuilder, MessageFlags, ChannelType } from "discord.js";
 import { ErrorType } from "../../../constants/errors.js";
-import { setChannelMultiplier } from "../../../utils/database.js";
+import { getLevelRolesByLevel, setChannelMultiplier } from "../../../utils/database.js";
 import { CustomError, handleCommandError } from "../../../utils/errors.js";
 import { getDiscordRelativeTime } from "../../../utils/format.js";
 import { parseRelativeDate } from "../../../utils/time.js";
+import { getServerLevelEmbed } from "../../../utils/embeds.js";
 
 export function scXpSummaryLevel(builder: SlashCommandSubcommandGroupBuilder) {
     return builder.addSubcommand((command) =>
         command
-            .setName('channel-boost')
-            .setDescription('Set xp gain multiplier for when any user event occurs in the specified channel.')
-            .addNumberOption((option) => 
-                option.setName('multiplier').setDescription('Number to multiply all xp gain by. Xp gain is rounded to nearest integer.').setRequired(true))
-            .addChannelOption(option =>
-                option.setName("channel")
-                .setDescription("Channel to apply this xp multiplier to. Category channel will apply to all subchannels.")
-                .setRequired(false)
-            )
-            .addStringOption(option =>
-                option.setName("")
-            )
+            .setName('level')
+            .setDescription('Summary of a specific level.')
+            .addIntegerOption((option) => 
+                option.setName('level').setDescription('Level to get the summary of.').setRequired(true))
         )
 }
 
 export async function chatInputLevelReal(interaction: Command.ChatInputCommandInteraction) {
     try {
-        let channel = interaction.options.getChannel('channel');
-        let multiplier = interaction.options.getNumber('multiplier', true);
-        let expiration = interaction.options.getString('expiration');
-
         await interaction.deferReply({flags: [MessageFlags.Ephemeral]});
 
-        if (!channel) {
-            const interactionChannel = interaction.channel;
-            if (!interactionChannel) throw new CustomError("Channel argument not supplied and the channel related to this interaction is not defined.", ErrorType.Error);
-            if (!(interactionChannel.type == ChannelType.GuildText)) throw new CustomError("Channel argument not supplied and the channel related to this interaction is not a guild text channel.", ErrorType.Error);
-            channel = interactionChannel;
-        }
+        let level = interaction.options.getInteger('level', true);
 
-        let expirationString = '';
-        let expirationDate = undefined;
-        if (expiration) {
-            expirationDate = parseRelativeDate(expiration);
-            expirationString = `\nThis boost is set to expire ${getDiscordRelativeTime(expirationDate)}`;
-        }
+        const allRoles = await getLevelRolesByLevel(level);
+        const gainedRoles = allRoles.filter(role => role.gained).map(role => role.roleId);
+        const lostRoles = allRoles.filter(role => !role.gained).map(role => role.roleId);
 
-        await setChannelMultiplier(channel.id, multiplier, expirationDate);
+        const embed = await getServerLevelEmbed(level, gainedRoles, lostRoles);
 
-        return interaction.editReply({ content: `Successfully set **${multiplier}**x multiplier for all xp gain in <#${channel.id}>.${expirationString}`});
+        return await interaction.editReply({ embeds: [embed]});
     } catch (error) {
         handleCommandError(interaction, error);
     }

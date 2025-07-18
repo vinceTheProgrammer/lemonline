@@ -1,5 +1,5 @@
 import type { Command } from "@sapphire/framework";
-import { ChannelType, MessageFlags, SlashCommandSubcommandGroupBuilder } from "discord.js";
+import { CategoryChannel, ChannelType, MessageFlags, SlashCommandSubcommandGroupBuilder } from "discord.js";
 import { CustomError, handleCommandError } from "../../../utils/errors.js";
 import { getDiscordRelativeTime } from "../../../utils/format.js";
 import { parseRelativeDate } from "../../../utils/time.js";
@@ -36,15 +36,31 @@ export async function chatInputBoostReal(interaction: Command.ChatInputCommandIn
         }
 
         let expirationString = '';
-        let expirationDate = undefined;
+        let expirationDate = null;
         if (expiration) {
             expirationDate = parseRelativeDate(expiration);
-            expirationString = `\nThis boost is set to expire ${getDiscordRelativeTime(expirationDate)}`;
+            expirationString = `\nset to expire ${getDiscordRelativeTime(expirationDate)} `;
         }
 
-        await setChannelMultiplier(channel.id, multiplier, expirationDate);
+        const multipleChannels: string | any[] = [];
 
-        return interaction.editReply({ content: `Successfully set **${multiplier}**x multiplier for all xp gain in <#${channel.id}>.${expirationString}`});
+        if (channel.type == ChannelType.GuildCategory) {
+            (channel as CategoryChannel).children.cache.forEach(async child => {
+                await setChannelMultiplier(child.id, multiplier, expirationDate);
+            })
+        } else {
+            await setChannelMultiplier(channel.id, multiplier, expirationDate);
+        }
+
+        if (multipleChannels.length > 0) {
+            let channelsString = '';
+            for (let i = 0; i < multipleChannels.length; i++) {
+                channelsString += `- <#${multipleChannels[i]}>` + '\n';
+            }
+            return interaction.editReply({ content: `Successfully set **${multiplier}**x multiplier for all xp gain ${expirationString}in the following channels:\n${channelsString}`});
+        } else {
+            return interaction.editReply({ content: `Successfully set **${multiplier}**x multiplier for all xp gain in <#${channel.id}>.${expirationString}`});
+        }
     } catch (error) {
         handleCommandError(interaction, error);
     }
