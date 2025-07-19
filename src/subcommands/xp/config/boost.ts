@@ -43,14 +43,25 @@ export async function chatInputBoostReal(interaction: Command.ChatInputCommandIn
         }
 
         const multipleChannels: string | any[] = [];
+        const promises : Promise<void>[] = [];
 
         if (channel.type == ChannelType.GuildCategory) {
-            (channel as CategoryChannel).children.cache.forEach(async child => {
-                await setChannelMultiplier(child.id, multiplier, expirationDate);
+            (channel as CategoryChannel).children.cache.forEach(child => {
+                promises.push(
+                    new Promise(async res => {
+                        if (child.type == ChannelType.GuildText || child.type == ChannelType.GuildForum) {
+                            await setChannelMultiplier(child.id, multiplier, expirationDate);
+                            multipleChannels.push(child.id);
+                        }
+                        res();
+                    })
+                )
             })
         } else {
             await setChannelMultiplier(channel.id, multiplier, expirationDate);
         }
+
+        await Promise.all(promises);
 
         if (multipleChannels.length > 0) {
             let channelsString = '';
