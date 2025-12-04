@@ -9,8 +9,7 @@
     "start:prod": "export $(cat .env.production | xargs) && $NVM_PATH node dist/index.js",
     "migrate:dev": "export $(cat .env.development | xargs) &&  prisma migrate dev &&  prisma generate",
     "migrate:prod": "export $(cat .env.production | xargs) &&  prisma migrate deploy &&  prisma generate",
-    "reset:redis": "redis-cli FLUSHALL",
-    "start:full": "pnpm run clean && pnpm run build:prod && pnpm run reset:redis && pm2 reload lemonline"
+    "start:full": "export $(cat .env.production | xargs) && pnpm run clean && pnpm run build:prod && pm2 reload lemonline"
   },
   "packageManager": "pnpm@10.11.0",
   "dependencies": {
