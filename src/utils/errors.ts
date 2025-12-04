@@ -1,4 +1,4 @@
-import type { Command } from "@sapphire/framework";
+import { container, type Command } from "@sapphire/framework";
 import { getErrorEmbed, getVerboseErrorEmbed, getWarningEmbed } from "./embeds.js";
 import { Prisma } from "@prisma/client";
 import { ErrorType } from "../constants/errors.js";
@@ -19,6 +19,44 @@ export class CustomError extends Error {
 
         // Ensure the prototype chain is properly set.
         Object.setPrototypeOf(this, new.target.prototype);
+    }
+}
+
+export async function handleGenericError(error: unknown) {
+
+    const client = container.client;
+
+    const logErrorToChannel = async (errorMessage: string) => {
+        if (process.env.NODE_ENV == 'development') return;
+        try {
+            const errorChannel = await client.channels.fetch(ChannelId.ErrorLog);
+            if (errorChannel?.isTextBased() && errorChannel.type == ChannelType.GuildText) {
+                await errorChannel.send({
+                    content: `Generic error encountered. Error message:\n${errorMessage}`,
+                });
+            } else {
+                console.warn(`Channel ${ChannelId.ErrorLog} is not a text-based channel or was not found.`);
+            }
+        } catch (channelError) {
+            console.error(`Failed to send error to log channel ${ChannelId.ErrorLog}:`, channelError);
+        }
+    };
+
+    if (error instanceof CustomError) {
+        switch (error.errorType) {
+            case ErrorType.Error:
+                await logErrorToChannel(`${error.name}: ${error.message}${error.originalError ? `\nOriginal Error: ${error.originalError.message}` : ''}`);
+            case ErrorType.Warning:
+                break;
+            default:
+                await logErrorToChannel(`${error.name}: ${error.message}`);
+        }
+
+    } else if (error instanceof DiscordAPIError) {
+        const string = `${error.name}: ${error.message}`;
+        await logErrorToChannel(string);
+    } else {
+        console.error('Unexpected Error:', error);
     }
 }
 

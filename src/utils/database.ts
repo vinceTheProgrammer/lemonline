@@ -2,6 +2,7 @@ import type { Collection, GuildMember } from 'discord.js';
 import prisma from '../utils/prisma.js';
 import { handlePrismaError } from './errors.js';
 import { Prisma, type Intro } from '@prisma/client';
+import { updateUserRoles } from './roles.js';
 
 export async function logMessage(discordId: string, date?: Date) {
     try {
@@ -169,7 +170,7 @@ export async function incrementIntroRepostCount(discordId: string) {
 
 export async function addXp(discordId: string, amount: number) {
     try {
-        return await prisma.user.upsert({
+        const user = await prisma.user.upsert({
             where: {
                 discordId: discordId
             },
@@ -183,6 +184,10 @@ export async function addXp(discordId: string, amount: number) {
                 xp: amount
             }
         })
+
+        updateUserRoles(user);
+
+        return user;
     } catch (error) {
         throw handlePrismaError(error);
     }
@@ -191,7 +196,7 @@ export async function addXp(discordId: string, amount: number) {
 export async function removeXp(discordId: string, amount: number) 
 {
     try {
-        return await prisma.user.upsert({
+        const user = await prisma.user.upsert({
             where: {
                 discordId: discordId
             },
@@ -205,6 +210,10 @@ export async function removeXp(discordId: string, amount: number)
                 xp: 0
             }
         })
+
+        updateUserRoles(user);
+
+        return user;
     } catch (error) {
         throw handlePrismaError(error);
     }
@@ -224,7 +233,7 @@ export async function getXp(discordId: string) {
 
 export async function setXp(discordId: string, amount: number) {
     try {
-        return await prisma.user.upsert({
+        const user = await prisma.user.upsert({
             where: {
                 discordId: discordId
             },
@@ -236,6 +245,10 @@ export async function setXp(discordId: string, amount: number) {
                 xp: amount
             }
         })
+
+        updateUserRoles(user);
+
+        return user;
     } catch (error) {
         throw handlePrismaError(error);
     }
