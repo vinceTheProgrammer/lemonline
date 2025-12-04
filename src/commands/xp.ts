@@ -33,7 +33,7 @@ export class CreateMessageCommand extends Subcommand {
             ...options,
             name: 'xp',
             description: 'Manage various things related to xp.',
-            preconditions: ['StaffOnly'],
+            preconditions: ['AdminOnly'],
             subcommands: [
                 {
                     name: 'config',

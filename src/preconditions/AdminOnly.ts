@@ -2,24 +2,25 @@ import { AllFlowsPrecondition } from '@sapphire/framework';
 import { CommandInteraction, Message, type ContextMenuCommandInteraction, type Snowflake } from 'discord.js';
 import { RoleId } from '../constants/roles.js';
 import { isGuildMember, isMessageInstance } from '@sapphire/discord.js-utilities';
+import { UserId } from '../constants/users.js';
 
 export class UserPrecondition extends AllFlowsPrecondition {
-	#message = 'You must be a staff member to use this command.';
-    #unableMessage = 'Unable to determine roles. Please try again later.';
+	#message = 'You must be an admin to use this command.';
+    #unableMessage = 'There was a problem while resolving your member info. Please try again later.';
 
 	public override chatInputRun(interaction: CommandInteraction) {
-		return this.doStaffCheck(interaction);
+		return this.doAdminCheck(interaction);
 	}
 
 	public override contextMenuRun(interaction: ContextMenuCommandInteraction) {
-		return this.doStaffCheck(interaction);
+		return this.doAdminCheck(interaction);
 	}
 
 	public override messageRun(message: Message) {
-		return this.doStaffCheck(message);
+		return this.doAdminCheck(message);
 	}
 
-	private doStaffCheck(interactionOrMessage: CommandInteraction | Message) {
+	private doAdminCheck(interactionOrMessage: CommandInteraction | Message) {
 
         let rolesCache = null;
         let member = undefined;
@@ -41,12 +42,12 @@ export class UserPrecondition extends AllFlowsPrecondition {
 			return this.error({ message: this.#unableMessage });
 		}
 
-		return rolesCache.has(RoleId.Staff) ? this.ok() : this.error({ message: this.#message });
+		return rolesCache.has(RoleId.Owner) || rolesCache.has(RoleId.Admin) || member.id === UserId.lemon || member.id === UserId.vince ? this.ok() : this.error({ message: this.#message });
 	}
 }
 
 declare module '@sapphire/framework' {
 	interface Preconditions {
-		StaffOnly: never;
+		AdminOnly: never;
 	}
 }

@@ -12,7 +12,7 @@ export class CreateMessageCommand extends Command {
             ...options,
             name: 'create-message',
             description: 'Creates a message or post in a specified channel.',
-            preconditions: ['StaffOnly']
+            preconditions: ['AdminOnly']
         });
     }
 

@@ -1,7 +1,6 @@
 import { Listener } from '@sapphire/framework';
 import { ChannelType, type Message, type ThreadChannel } from 'discord.js';
 import { addXp, getChannelXpSettings, logMessage } from '../utils/database.js';
-import { postXpChannels } from '../constants/xp.js';
 import { hasDatePassed } from '../utils/time.js';
 
 export class ThreadCreate extends Listener {

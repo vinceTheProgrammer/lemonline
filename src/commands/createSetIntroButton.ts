@@ -10,7 +10,7 @@ export class CreateSetIntroButtonCommand extends Command {
             ...options,
             name: 'create-set-intro-button',
             description: 'Creates an instance of the set intro button.',
-            preconditions: ['StaffOnly']
+            preconditions: ['AdminOnly']
         });
     }
 

@@ -10,7 +10,7 @@ export class GetEmbedsCommand extends Command {
             ...options,
             name: 'get-embeds',
             description: 'Fetches the embeds of a Discord message given its link.',
-            preconditions: ['StaffOnly']
+            preconditions: ['AdminOnly']
         });
     }
 

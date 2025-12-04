@@ -1,7 +1,6 @@
 import { Listener } from '@sapphire/framework';
 import type { Message } from 'discord.js';
 import { addXp, getChannelXpSettings, logMessage } from '../utils/database.js';
-import { messageXpChannels } from '../constants/xp.js';
 import { hasDatePassed } from '../utils/time.js';
 
 export class MessageCreate extends Listener {
