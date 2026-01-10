@@ -1,4 +1,4 @@
-import { SlashCommandBuilder, type SlashCommandOptionsOnlyBuilder, type SlashCommandSubcommandsOnlyBuilder } from "discord.js"
+import { SlashCommandBuilder, type SlashCommandSubcommandsOnlyBuilder } from "discord.js"
 import { scXpConfigBase } from "./base.js";
 import { scXpConfigBoost } from "./boost.js";
 import { scXpConfigLevelRoles } from "./levelRoles.js";

@@ -1,0 +1,22 @@
+// src/routes/api/xp/fullXpConfig.post.ts
+import { Route } from '@sapphire/plugin-api';
+import { updateFullXpConfigWeb } from '../../../services/xpConfig';
+import { XpConfig } from '../../../types/xp';
+import { requireAdmin } from '../../../lib/requireAdmin';
+
+export class FullXpConfigPostRoute extends Route {
+  public async run(request: Route.Request, response: Route.Response) {
+    if (!(await requireAdmin(request, response))) return;
+
+    try {
+      const body = (await request.readBodyJson()) as XpConfig;
+
+      await updateFullXpConfigWeb(body);
+
+      return response.noContent();
+    } catch (error) {
+      console.log(error);
+      return response.error(JSON.stringify(error));
+    }
+  }
+}

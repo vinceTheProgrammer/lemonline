@@ -1,10 +1,11 @@
 import { Command } from '@sapphire/framework';
-import { ChannelType, ForumChannel, AttachmentBuilder, ChannelFlags, MessageFlags } from 'discord.js';
-import { CustomError, handleCommandError } from '../utils/errors.js';
+import { ChannelType, ForumChannel, ChannelFlags, MessageFlags } from 'discord.js';
+import { handleCommandError } from '../utils/errors.js';
 import { ErrorType } from '../constants/errors.js';
 import { parseEmbeds } from '../utils/embeds.js';
 import { getAttachments } from '../utils/attachments.js';
 import { parseComponents } from '../utils/components.js';
+import { CustomError } from '../utils/custom-error.js';
 
 export class CreateMessageCommand extends Command {
     public constructor(context: Command.Context, options: Command.Options) {
@@ -117,6 +118,7 @@ export class CreateMessageCommand extends Command {
             }
         } catch (error) {
             handleCommandError(interaction, error);
+            return;
         }
     }
 }

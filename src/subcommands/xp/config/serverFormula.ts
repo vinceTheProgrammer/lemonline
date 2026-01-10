@@ -1,10 +1,7 @@
 import type { Command } from "@sapphire/framework";
-import { SlashCommandSubcommandGroupBuilder, MessageFlags, ChannelType } from "discord.js";
-import { ErrorType } from "../../../constants/errors.js";
-import { setChannelMultiplier, setServerLevelFormula } from "../../../utils/database.js";
-import { CustomError, handleCommandError } from "../../../utils/errors.js";
-import { getDiscordRelativeTime } from "../../../utils/format.js";
-import { parseRelativeDate } from "../../../utils/time.js";
+import { SlashCommandSubcommandGroupBuilder, MessageFlags } from "discord.js";
+import { handleCommandError } from "../../../utils/errors.js";
+import { setLevelFormula } from "../../../services/xpConfig.js";
 
 export function scXpConfigServerFormula(builder: SlashCommandSubcommandGroupBuilder) {
     return builder.addSubcommand((command) =>
@@ -22,10 +19,11 @@ export async function chatInputServerFormulaReal(interaction: Command.ChatInputC
     
             let formulaString = interaction.options.getString('formula', true);
     
-            await setServerLevelFormula('1376370662360481812', formulaString);
-    
+            await setLevelFormula(formulaString);
+
             return interaction.editReply({ content: `Successfully set server level formula to ${formulaString}.`});
         } catch (error) {
             handleCommandError(interaction, error);
+            return;
         }
 }

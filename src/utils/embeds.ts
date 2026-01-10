@@ -1,12 +1,12 @@
 import { EmbedBuilder, GuildMember, type APIEmbed } from 'discord.js';
 import { Color } from '../constants/colors.js';
-import { CustomError } from './errors.js';
 import { ErrorType } from '../constants/errors.js';
-import { findByDiscordId, getXp, initUser } from './database.js';
+import { findByDiscordId, initUser } from './database.js';
 import { getDiscordRelativeTime, getSign, truncateString } from './format.js';
 import { getDeltaXp, getLevelFromXp, getRelativeXp, getTotalXp } from './xp.js';
 import type { ChannelXpSettings } from '@prisma/client';
 import { hasDatePassed } from './time.js';
+import { CustomError } from './custom-error.js';
 
 export function getErrorEmbed(error: string) {
     return new EmbedBuilder()

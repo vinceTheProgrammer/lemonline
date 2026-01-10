@@ -1,28 +1,51 @@
 {
-  "name": "lemonline",
+  "name": "lemon-transplant",
+  "version": "1.0.0",
   "main": "dist/index.js",
-  "type": "module",
-  "scripts": {
-    "dev": "export $(cat .env.development | xargs) &&  prisma generate && tsc-watch --outDir dist --onSuccess \"node ./dist/index.js\"",
-    "build:prod": "export $(cat .env.production | xargs) &&  prisma generate && tsc --outDir dist",
-    "clean": "rm -rf dist",
-    "start:prod": "export $(cat .env.production | xargs) && $NVM_PATH node dist/index.js",
-    "migrate:dev": "export $(cat .env.development | xargs) &&  prisma migrate dev &&  prisma generate",
-    "migrate:prod": "export $(cat .env.production | xargs) &&  prisma migrate deploy &&  prisma generate",
-    "start:full": "export $(cat .env.production | xargs) && pnpm run clean && pnpm run build:prod && pm2 reload lemonline"
-  },
-  "packageManager": "pnpm@10.11.0",
+  "author": "@sapphire",
+  "license": "UNLICENSE",
+  "type": "commonjs",
   "dependencies": {
-    "@prisma/client": "6.8.2",
-    "@sapphire/discord.js-utilities": "^7.3.3",
-    "@sapphire/framework": "^5.3.5",
+    "@prisma/adapter-better-sqlite3": "^7.2.0",
+    "@prisma/client": "^7.2.0",
+    "@sapphire/decorators": "^6.1.1",
+    "@sapphire/discord.js-utilities": "7.3.3",
+    "@sapphire/framework": "^5.3.2",
+    "@sapphire/plugin-api": "^8.3.1",
+    "@sapphire/plugin-logger": "^4.0.2",
     "@sapphire/plugin-subcommands": "^7.0.1",
-    "discord.js": "~14.19.3"
+    "@sapphire/utilities": "^3.18.1",
+    "better-sqlite3": "^12.5.0",
+    "colorette": "^2.0.20",
+    "discord-api-types": "^0.38.37",
+    "discord.js": "^14.25.1"
   },
   "devDependencies": {
-    "@types/node": "^22.15.23",
-    "prisma": "^6.8.2",
-    "tsc-watch": "^7.0.0",
-    "typescript": "^5.8.3"
-  }
+    "@sapphire/cli": "^1.9.3",
+    "@sapphire/prettier-config": "^2.0.0",
+    "@sapphire/ts-config": "^5.0.1",
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/node": "^22.10.7",
+    "@types/ws": "^8.5.13",
+    "prettier": "^3.4.2",
+    "prisma": "^7.2.0",
+    "tsc-watch": "^6.3.0",
+    "typescript": "~5.4.5"
+  },
+  "scripts": {
+    "sapphire": "sapphire",
+    "generate": "sapphire generate",
+    "build": "tsc",
+    "watch": "tsc -w",
+    "start": "node dist/index.js",
+    "dev": "npm run build && npm run start",
+    "watch:start": "tsc-watch --onSuccess \"npm run start\"",
+    "format": "prettier --write \"src/\"",
+    "fix-prisma-bindings": "cd node_modules/.pnpm/better-sqlite3@12.5.0/node_modules/better-sqlite3 && pnpm exec node-gyp rebuild",
+    "dev-actual-full": "pnpm run fix-prisma-bindings && export $(cat .env.development | xargs) &&  prisma generate && tsc-watch --outDir dist --onSuccess \"node ./dist/index.js\"",
+    "dev-actual": "export $(cat .env.development | xargs) &&  prisma generate && tsc-watch --outDir dist --onSuccess \"node ./dist/index.js\"",
+    "build:prod-actual": "export $(cat .env.production | xargs) &&  prisma generate && tsc --outDir dist",
+    "start:prod-actual": "export $(cat .env.production | xargs) && $NVM_PATH node dist/index.js"
+  },
+  "prettier": "@sapphire/prettier-config"
 }

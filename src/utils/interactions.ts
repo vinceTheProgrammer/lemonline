@@ -1,13 +1,11 @@
-import { MessageFlags, type GuildMember, type ModalSubmitInteraction } from "discord.js";
-import { verifyMember } from "./roles.js";
-import { container, type Command } from "@sapphire/framework";
-import { CustomError } from "./errors.js";
+import { type ModalSubmitInteraction } from "discord.js";
+import { type Command } from "@sapphire/framework";
 import { ErrorMessage, ErrorType } from "../constants/errors.js";
 import { getLevelEmbed } from "./embeds.js";
 import type { Prisma } from "@prisma/client";
 import { getLevelRolesByLevel, updateIntroByDiscordIdAndIntro } from "./database.js";
-import { getLevelFromXp, getTotalXp, totalXpFormula, xpCache } from "./xp.js";
-import { truncateString } from "./format.js";
+import { getLevelFromXp, xpPerLevelFn, xpCache } from "./xp.js";
+import { CustomError } from "./custom-error.js";
 
 export async function formatIntroModalSubmit(interaction: ModalSubmitInteraction, intro: Prisma.IntroUpdateInput) {
     try {
@@ -37,7 +35,7 @@ export async function handleLevelInteraction(interaction: Command.ChatInputComma
 
 export async function handlePrintLevelsInteraction(interaction: Command.ChatInputCommandInteraction, level: number) {
     try {
-        const totalXp = totalXpFormula(level);
+        const totalXp = xpPerLevelFn(level);
         getLevelFromXp(totalXp);
         const levelMappings = xpCache;
         const levelsStringArr: string[] = [];
@@ -46,8 +44,8 @@ export async function handlePrintLevelsInteraction(interaction: Command.ChatInpu
             promises.push(
                 new Promise<void>(async res => {
                     let levelRoles = await getLevelRolesByLevel(level_);
-                    let gainedRoles = levelRoles.filter(role => role.gained).map(role => truncateString(container.client.guilds.cache.get('1376370662360481812')?.roles.cache.get(role.roleId)?.name ?? '!!!', 4)).map(str => '+' + str);
-                    let lostRoles = levelRoles.filter(role => !role.gained).map(role => truncateString(container.client.guilds.cache.get('1376370662360481812')?.roles.cache.get(role.roleId)?.name ?? '!!!', 4)).map(str => '-' + str);
+                    let gainedRoles = levelRoles.filter(role => role.gained).map(role => `<&@${role.roleId}>`).map(str => '+' + str);
+                    let lostRoles = levelRoles.filter(role => !role.gained).map(role => `<&@${role.roleId}>`).map(str => '-' + str);
 
                     let allRoles = gainedRoles.concat(lostRoles);
 

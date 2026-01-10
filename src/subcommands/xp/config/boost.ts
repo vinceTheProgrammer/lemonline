@@ -1,10 +1,11 @@
 import type { Command } from "@sapphire/framework";
 import { CategoryChannel, ChannelType, MessageFlags, SlashCommandSubcommandGroupBuilder } from "discord.js";
-import { CustomError, handleCommandError } from "../../../utils/errors.js";
+import { handleCommandError } from "../../../utils/errors.js";
 import { getDiscordRelativeTime } from "../../../utils/format.js";
 import { parseRelativeDate } from "../../../utils/time.js";
-import { setChannelMultiplier } from "../../../utils/database.js";
 import { ErrorType } from "../../../constants/errors.js";
+import { setChannelBoost } from "../../../services/xpConfig.js";
+import { CustomError } from "../../../utils/custom-error.js";
 
 export function scXpConfigBoost(builder: SlashCommandSubcommandGroupBuilder) {
     return builder.addSubcommand((command) =>
@@ -50,7 +51,7 @@ export async function chatInputBoostReal(interaction: Command.ChatInputCommandIn
                 promises.push(
                     new Promise(async res => {
                         if (child.type == ChannelType.GuildText || child.type == ChannelType.GuildForum) {
-                            await setChannelMultiplier(child.id, multiplier, expirationDate);
+                            await setChannelBoost({channelId: child.id, multiplier, expiresAt: expirationDate});
                             multipleChannels.push(child.id);
                         }
                         res();
@@ -58,7 +59,7 @@ export async function chatInputBoostReal(interaction: Command.ChatInputCommandIn
                 )
             })
         } else {
-            await setChannelMultiplier(channel.id, multiplier, expirationDate);
+            await setChannelBoost({channelId: channel.id, multiplier, expiresAt: expirationDate});
         }
 
         await Promise.all(promises);
@@ -74,5 +75,6 @@ export async function chatInputBoostReal(interaction: Command.ChatInputCommandIn
         }
     } catch (error) {
         handleCommandError(interaction, error);
+        return;
     }
 }

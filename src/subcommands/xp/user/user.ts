@@ -1,4 +1,4 @@
-import { SlashCommandBuilder, type SlashCommandOptionsOnlyBuilder, type SlashCommandSubcommandsOnlyBuilder } from "discord.js"
+import { SlashCommandBuilder, type SlashCommandSubcommandsOnlyBuilder } from "discord.js"
 import { scXpUserSet } from "./set.js";
 import { scXpUserIncrease } from "./increase.js";
 import { scXpUserDecrease } from "./decrease.js";

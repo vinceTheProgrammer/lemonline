@@ -3,7 +3,8 @@ import { SlashCommandSubcommandGroupBuilder, MessageFlags, ChannelType } from "d
 import { ErrorType } from "../../../constants/errors.js";
 import { getChannelXpSettings } from "../../../utils/database.js";
 import { getChannelXpSettingsEmbed } from "../../../utils/embeds.js";
-import { CustomError, handleCommandError } from "../../../utils/errors.js";
+import { handleCommandError } from "../../../utils/errors.js";
+import { CustomError } from "../../../utils/custom-error.js";
 
 export function scXpSummaryChannel(builder: SlashCommandSubcommandGroupBuilder) {
     return builder.addSubcommand((command) =>
@@ -35,5 +36,6 @@ export async function chatInputChannelReal(interaction: Command.ChatInputCommand
         return interaction.editReply({ embeds: [embed]});
     } catch (error) {
         handleCommandError(interaction, error);
+        return;
     }
 }

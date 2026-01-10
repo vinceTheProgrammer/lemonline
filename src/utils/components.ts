@@ -1,6 +1,6 @@
-import { ButtonBuilder, ActionRowBuilder, ButtonStyle, type MessageActionRowComponent, type APIButtonComponentWithCustomId, ButtonComponent, type APISelectMenuComponent, type APIButtonComponent } from 'discord.js';
-import { CustomError } from './errors.js';
+import { ButtonBuilder, ActionRowBuilder, ButtonStyle, type APIButtonComponentWithCustomId, type APISelectMenuComponent, type APIButtonComponent } from 'discord.js';
 import { ErrorType } from '../constants/errors.js';
+import { CustomError } from './custom-error.js';
 
 export function parseComponents(rawComponents: string | undefined): ActionRowBuilder<ButtonBuilder>[] | undefined {
     if (!rawComponents) return undefined;

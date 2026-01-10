@@ -1,13 +1,12 @@
-import { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, ChannelType, EmbedBuilder, ForumChannel, Message, MessagePayload, ModalBuilder, TextInputBuilder, TextInputStyle, ThreadChannel, WebhookClient, type APIEmbedField, type Guild, type GuildMember, type WebhookMessageCreateOptions, type WebhookMessageEditOptions } from "discord.js";
-import { ChannelId } from "../constants/channels.js";
-import { CustomError } from "./errors.js";
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, Message, ModalBuilder, TextInputBuilder, TextInputStyle, WebhookClient, type APIEmbedField, type Guild, type GuildMember, type WebhookMessageCreateOptions, type WebhookMessageEditOptions } from "discord.js";
 import { ErrorType } from "../constants/errors.js";
 import { findByDiscordIdWithIntro, incrementIntroRepostCount, updateIntroByDiscordIdAndIntro } from "./database.js";
 import type { Prisma } from "@prisma/client";
 import { getIntroWebhookClient } from "./webhooks.js";
-import { isMessageInstance, MessageBuilder } from "@sapphire/discord.js-utilities";
+import { MessageBuilder } from "@sapphire/discord.js-utilities";
 import { container } from "@sapphire/framework";
 import { canEditMessage } from "./messages.js";
+import { CustomError } from "./custom-error.js";
 
 export async function syncIntroPost(member: GuildMember, guild: Guild) {
     try {
@@ -102,7 +101,7 @@ async function createIntroPost(member: GuildMember, guild: Guild) {
     }
 }
 
-async function getIntroMessagePayload(member: GuildMember, guild: Guild) : Promise<WebhookMessageCreateOptions> {
+async function getIntroMessagePayload(member: GuildMember, _guild: Guild) : Promise<WebhookMessageCreateOptions> {
     try {
         const avatar = member.user.displayAvatarURL();
 
@@ -137,10 +136,10 @@ async function getIntroMessagePayload(member: GuildMember, guild: Guild) : Promi
             })
         }
 
-        let repostCountString = '?';
-        if (intro) {
-            repostCountString = intro.repostCount == 0 ? `ORIGINAL POST` : `REPOST #${intro.repostCount}`
-        }
+        // let repostCountString = '?';
+        // if (intro) {
+        //     repostCountString = intro.repostCount == 0 ? `ORIGINAL POST` : `REPOST #${intro.repostCount}`
+        // }
 
         const embed = new EmbedBuilder()
             .setTitle(intro?.username ?? member.user.username)

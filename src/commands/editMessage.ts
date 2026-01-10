@@ -1,11 +1,12 @@
 import { Command } from '@sapphire/framework';
-import { ChannelType, type TextBasedChannel, AttachmentBuilder, MessageFlags } from 'discord.js';
-import { CustomError, handleCommandError } from '../utils/errors.js';
+import { ChannelType, type TextBasedChannel, MessageFlags } from 'discord.js';
+import { handleCommandError } from '../utils/errors.js';
 import { getAttachments } from '../utils/attachments.js';
 import { parseEmbeds } from '../utils/embeds.js';
 import { ErrorType } from '../constants/errors.js';
 import { validateMessage } from '../utils/messages.js';
 import { parseComponents } from '../utils/components.js';
+import { CustomError } from '../utils/custom-error.js';
 
 export class EditMessageCommand extends Command {
     public constructor(context: Command.Context, options: Command.Options) {
@@ -125,6 +126,7 @@ export class EditMessageCommand extends Command {
             
         } catch (error) {
             handleCommandError(interaction, error);
+            return;
         }
     }
 

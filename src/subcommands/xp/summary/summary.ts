@@ -1,4 +1,4 @@
-import { SlashCommandBuilder, type SlashCommandOptionsOnlyBuilder, type SlashCommandSubcommandsOnlyBuilder } from "discord.js"
+import { SlashCommandBuilder, type SlashCommandSubcommandsOnlyBuilder } from "discord.js"
 import { scXpSummaryChannel } from "./channel.js";
 import { scXpSummaryChannels } from "./channels.js";
 import { scXpSummaryLevel } from "./level.js";

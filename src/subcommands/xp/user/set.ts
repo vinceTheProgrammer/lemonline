@@ -2,6 +2,8 @@ import type { Command } from "@sapphire/framework";
 import { SlashCommandSubcommandGroupBuilder, MessageFlags } from "discord.js";
 import { setXp } from "../../../utils/database.js";
 import { handleCommandError } from "../../../utils/errors.js";
+import { CustomError } from "../../../utils/custom-error.js";
+import { ErrorType } from "../../../constants/errors.js";
 
 export function scXpUserSet(builder: SlashCommandSubcommandGroupBuilder) {
     return builder.addSubcommand((command) =>
@@ -25,10 +27,14 @@ export async function chatInputSetReal(interaction: Command.ChatInputCommandInte
         const user = interaction.options.getUser('user', true);
         const amount = interaction.options.getInteger('amount', true);
 
-        await setXp(user.id, amount);
+        const guild = interaction.guild;
+        if (!guild) throw new CustomError("Guild is null", ErrorType.Error);
+
+        await setXp(user.id, amount, guild);
 
         return interaction.editReply({ content: `Successfully set <@${user.id}>'s xp to ${amount}.`});
     } catch (error) {
         handleCommandError(interaction, error);
+        return;
     }
 }

@@ -1,10 +1,7 @@
 import type { Command } from "@sapphire/framework";
-import { SlashCommandSubcommandGroupBuilder, MessageFlags, ChannelType } from "discord.js";
-import { ErrorType } from "../../../constants/errors.js";
-import { getLevelRolesByLevel, setChannelMultiplier } from "../../../utils/database.js";
-import { CustomError, handleCommandError } from "../../../utils/errors.js";
-import { getDiscordRelativeTime } from "../../../utils/format.js";
-import { parseRelativeDate } from "../../../utils/time.js";
+import { SlashCommandSubcommandGroupBuilder, MessageFlags } from "discord.js";
+import { getLevelRolesByLevel } from "../../../utils/database.js";
+import { handleCommandError } from "../../../utils/errors.js";
 import { getServerLevelEmbed } from "../../../utils/embeds.js";
 
 export function scXpSummaryLevel(builder: SlashCommandSubcommandGroupBuilder) {
@@ -32,5 +29,6 @@ export async function chatInputLevelReal(interaction: Command.ChatInputCommandIn
         return await interaction.editReply({ embeds: [embed]});
     } catch (error) {
         handleCommandError(interaction, error);
+        return;
     }
 }

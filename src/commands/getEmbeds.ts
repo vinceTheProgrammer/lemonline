@@ -1,8 +1,9 @@
 import { Command } from '@sapphire/framework';
 import { parseMessageLink } from '../utils/messages.js';
-import { AttachmentBuilder, ChannelType, MessageFlags, TextChannel } from 'discord.js';
-import { CustomError, handleCommandError } from '../utils/errors.js';
+import { AttachmentBuilder, ChannelType, MessageFlags } from 'discord.js';
+import { handleCommandError } from '../utils/errors.js';
 import { ErrorType } from '../constants/errors.js';
+import { CustomError } from '../utils/custom-error.js';
 
 export class GetEmbedsCommand extends Command {
     public constructor(context: Command.Context, options: Command.Options) {
@@ -76,6 +77,7 @@ export class GetEmbedsCommand extends Command {
             });
         } catch (error) {
             handleCommandError(interaction, error);
+            return;
         }
     }
 }

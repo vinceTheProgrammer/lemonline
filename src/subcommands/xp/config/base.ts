@@ -1,8 +1,9 @@
 import type { Command } from "@sapphire/framework";
 import { CategoryChannel, ChannelType, MessageFlags, type SlashCommandSubcommandGroupBuilder } from "discord.js";
-import { CustomError, handleCommandError } from "../../../utils/errors.js";
-import { setChannelBaseMessageXp, setChannelBaseThreadXp } from "../../../utils/database.js";
+import { handleCommandError } from "../../../utils/errors.js";
 import { ErrorType } from "../../../constants/errors.js";
+import { setChannelBaseXp } from "../../../services/xpConfig.js";
+import { CustomError } from "../../../utils/custom-error.js";
 
 export function scXpConfigBase(builder: SlashCommandSubcommandGroupBuilder) {
     return builder.addSubcommand((command) =>
@@ -92,18 +93,15 @@ export async function chatInputBaseReal(interaction: Command.ChatInputCommandInt
             }
         } catch (error) {
             handleCommandError(interaction, error);
+            return;
         }
 }
 
 async function applyEvent(channelId: string, amount: number, event: string) {
-    switch (event) {
-        case "messageCreate":
-            await setChannelBaseMessageXp(channelId, amount);
-            break;
-        case "threadCreate":
-            await setChannelBaseThreadXp(channelId, amount);
-            break;
-        default:
-            await setChannelBaseMessageXp(channelId, amount);    
+    try {
+        const typeGuardedEvent = event == 'messageCreate' || event == 'threadCreate' ? event : 'messageCreate';
+        await setChannelBaseXp({channelId, event: typeGuardedEvent, amount});
+    } catch (error) {
+        throw error
     }
 }

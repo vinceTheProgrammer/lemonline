@@ -1,6 +1,6 @@
 import { Listener } from '@sapphire/framework';
-import { ChannelType, type Message, type ThreadChannel } from 'discord.js';
-import { addXp, getChannelXpSettings, logMessage } from '../utils/database.js';
+import { type ThreadChannel } from 'discord.js';
+import { addXp, getChannelXpSettings } from '../utils/database.js';
 import { hasDatePassed } from '../utils/time.js';
 
 export class ThreadCreate extends Listener {
@@ -12,7 +12,7 @@ export class ThreadCreate extends Listener {
     }
 
     override async run(thread: ThreadChannel, _: any) {
-        if (thread.parent) {
+        if (thread.parent && thread.guild) {
             const starterMsg = await thread.fetchStarterMessage();
             if (!starterMsg || starterMsg.author.bot) return;
 
@@ -37,8 +37,7 @@ export class ThreadCreate extends Listener {
 
             amount = Math.round(amount);
 
-            await addXp(starterMsg.author.id, amount);
-            console.log(`Added ${amount} xp to ${starterMsg.author.username}`);
+            await addXp(starterMsg.author.id, amount, thread.guild);
         }
     }
 }

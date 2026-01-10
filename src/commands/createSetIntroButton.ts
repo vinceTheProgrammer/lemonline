@@ -1,8 +1,9 @@
 import { Command } from '@sapphire/framework';
-import { ChannelType, ForumChannel, AttachmentBuilder, ChannelFlags, MessageFlags } from 'discord.js';
-import { CustomError, handleCommandError } from '../utils/errors.js';
+import { ChannelType, MessageFlags } from 'discord.js';
+import { handleCommandError } from '../utils/errors.js';
 import { ErrorType } from '../constants/errors.js';
 import { getSetIntroButton } from '../utils/intro.js';
+import { CustomError } from '../utils/custom-error.js';
 
 export class CreateSetIntroButtonCommand extends Command {
     public constructor(context: Command.Context, options: Command.Options) {
@@ -49,6 +50,7 @@ export class CreateSetIntroButtonCommand extends Command {
             }
         } catch (error) {
             handleCommandError(interaction, error);
+            return;
         }
     }
 }

@@ -1,6 +1,6 @@
 import { WebhookClient } from "discord.js";
-import { CustomError } from "./errors.js";
 import { ErrorType } from "../constants/errors.js";
+import { CustomError } from "./custom-error.js";
 
 const webhook = new WebhookClient({
     id: process.env.WEBHOOK_ID ?? '',

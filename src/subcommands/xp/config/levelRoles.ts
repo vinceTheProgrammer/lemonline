@@ -1,10 +1,7 @@
 import type { Command } from "@sapphire/framework";
-import { SlashCommandSubcommandGroupBuilder, MessageFlags, ChannelType } from "discord.js";
-import { ErrorType } from "../../../constants/errors.js";
-import { addLevelRole, removeLevelRole, setChannelMultiplier } from "../../../utils/database.js";
-import { CustomError, handleCommandError } from "../../../utils/errors.js";
-import { getDiscordRelativeTime } from "../../../utils/format.js";
-import { parseRelativeDate } from "../../../utils/time.js";
+import { SlashCommandSubcommandGroupBuilder, MessageFlags } from "discord.js";
+import { handleCommandError } from "../../../utils/errors.js";
+import { removeLevelRole, setLevelRole } from "../../../services/xpConfig.js";
 
 export function scXpConfigLevelRoles(builder: SlashCommandSubcommandGroupBuilder) {
     return builder.addSubcommand((command) =>
@@ -65,13 +62,14 @@ export async function chatInputLevelRolesReal(interaction: Command.ChatInputComm
         const gainString = gain ? 'awarded to' : 'revoked from'; 
 
         if (insert) {
-            await addLevelRole(level, role.id, gain);
+            await setLevelRole({level, roleId: role.id, type: gain ? 'gain' : 'lose'})
             return interaction.editReply({ content: `Successfully inserted new level role. <@&${role.id}> will be ${gainString} any user that reaches level ${level}.`});
         } else {
-            await removeLevelRole(level, role.id);
+            await removeLevelRole({level, roleId: role.id})
             return interaction.editReply({ content: `Successfully deleted level role. <@&${role.id}> will no longer be awarded or revoked when a user reaches level ${level}.`});
         }
     } catch (error) {
         handleCommandError(interaction, error);
+        return;
     }
 }

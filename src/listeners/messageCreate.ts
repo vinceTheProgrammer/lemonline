@@ -12,7 +12,7 @@ export class MessageCreate extends Listener {
     }
 
     override async run(message: Message) {
-        if (!message.author.bot) {
+        if (!message.author.bot && message.guild) {
             logMessage(message.author.id);
 
             // fetch channel xp settings
@@ -35,8 +35,7 @@ export class MessageCreate extends Listener {
 
             amount = Math.round(amount);
 
-            await addXp(message.author.id, amount);
-            console.log(`Added ${amount} xp to ${message.author.username}`);
+            await addXp(message.author.id, amount, message.guild);
         };
     }
 }

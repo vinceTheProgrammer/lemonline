@@ -4,23 +4,7 @@ import { Prisma } from "@prisma/client";
 import { ErrorType } from "../constants/errors.js";
 import { ChannelType, DiscordAPIError, MessageFlags, type ButtonInteraction, type ModalSubmitInteraction } from "discord.js";
 import { ChannelId } from "../constants/channels.js";
-
-export class CustomError extends Error {
-    originalError: Error | null;
-    errorType: ErrorType;
-    footer: string | undefined;
-
-    constructor(message: string, errorType: ErrorType, originalError: Error | null = null, footer?: string) {
-        super(message); // Set the custom message.
-        this.name = "CustomLemonLineError"; // Optional: set a specific name.
-        this.originalError = originalError;
-        this.errorType = errorType;
-        this.footer = footer;
-
-        // Ensure the prototype chain is properly set.
-        Object.setPrototypeOf(this, new.target.prototype);
-    }
-}
+import { CustomError } from "./custom-error.js";
 
 export async function handleGenericError(error: unknown) {
 
@@ -46,6 +30,7 @@ export async function handleGenericError(error: unknown) {
         switch (error.errorType) {
             case ErrorType.Error:
                 await logErrorToChannel(`${error.name}: ${error.message}${error.originalError ? `\nOriginal Error: ${error.originalError.message}` : ''}`);
+                break;
             case ErrorType.Warning:
                 break;
             default:
@@ -111,6 +96,8 @@ export async function handleCommandError(
 export function handlePrismaError(error: any) {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
         return new CustomError(`Prisma error! Error code: ${error.code}`, ErrorType.Error, error)
+    } else if (error instanceof CustomError) {
+        return error;
     }
-    return new CustomError("Strange Prisma error!", ErrorType.Error);
+    return new CustomError("Strange Prisma error!", ErrorType.Error, new Error(JSON.stringify(error)));
 }

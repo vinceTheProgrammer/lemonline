@@ -3,7 +3,6 @@ import { ApplicationCommandType, MessageFlags } from 'discord.js';
 import type { ContextMenuCommandType } from 'discord.js';
 import { handleCommandError } from '../utils/errors.js';
 import { handleLevelInteraction } from '../utils/interactions.js';
-import { getTotalXp } from '../utils/xp.js';
 
 export class LevelCommand extends Command {
   public constructor(context: Command.LoaderContext, options: Command.Options) {

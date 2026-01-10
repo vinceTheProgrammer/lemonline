@@ -1,12 +1,12 @@
 import { InteractionHandler, InteractionHandlerTypes } from '@sapphire/framework';
 import { MessageFlags, type ModalSubmitInteraction } from 'discord.js';
-import { CustomError, handleCommandError } from '../utils/errors.js';
-import { verifyMember } from '../utils/roles.js';
+import { handleCommandError } from '../utils/errors.js';
 import { isGuildMember } from '@sapphire/discord.js-utilities';
 import { ErrorType } from '../constants/errors.js';
 import { formatIntroModalSubmit } from '../utils/interactions.js';
 import type { Prisma } from '@prisma/client';
 import { syncIntroPost } from '../utils/intro.js';
+import { CustomError } from '../utils/custom-error.js';
 
 export class ModalSubmitHandler extends InteractionHandler {
   public constructor(ctx: InteractionHandler.LoaderContext, options: InteractionHandler.Options) {
@@ -24,8 +24,8 @@ export class ModalSubmitHandler extends InteractionHandler {
       const description = interaction.fields.getTextInputValue('description');
 
       const interests = interaction.fields.getTextInputValue('interests');
-      const social1 = interaction.fields.getTextInputValue('social1');
-      const social2 = interaction.fields.getTextInputValue('social2');
+      //const social1 = interaction.fields.getTextInputValue('social1');
+      //const social2 = interaction.fields.getTextInputValue('social2');
 
       const introUpdateInput : Prisma.IntroUpdateInput = {
         username,

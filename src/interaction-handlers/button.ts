@@ -1,5 +1,5 @@
 import { InteractionHandler, InteractionHandlerTypes } from '@sapphire/framework';
-import { ActionRowBuilder, ModalBuilder, TextInputBuilder, TextInputStyle, ModalSubmitInteraction, MessageFlags } from 'discord.js';
+import { MessageFlags } from 'discord.js';
 import type { ButtonInteraction } from 'discord.js';
 import { handleCommandError } from '../utils/errors.js';
 import { createOnboardingPages } from '../utils/onboarding.js';

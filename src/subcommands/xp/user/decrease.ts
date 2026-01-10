@@ -2,6 +2,8 @@ import type { Command } from "@sapphire/framework";
 import { SlashCommandSubcommandGroupBuilder, MessageFlags } from "discord.js";
 import { removeXp } from "../../../utils/database.js";
 import { handleCommandError } from "../../../utils/errors.js";
+import { CustomError } from "../../../utils/custom-error.js";
+import { ErrorType } from "../../../constants/errors.js";
 
 export function scXpUserDecrease(builder: SlashCommandSubcommandGroupBuilder) {
     return builder.addSubcommand((command) =>
@@ -25,10 +27,14 @@ export async function chatInputDecreaseReal(interaction: Command.ChatInputComman
         const user = interaction.options.getUser('user', true);
         const amount = interaction.options.getInteger('amount', true);
 
-        const result = await removeXp(user.id, amount);
+        const guild = interaction.guild;
+        if (!guild) throw new CustomError("Guild is null", ErrorType.Error);
+
+        const result = await removeXp(user.id, amount, guild);
 
         return interaction.editReply({ content: `Successfully decreased <@${user.id}>'s xp by ${amount}. They now have ${result.xp} xp.`});
     } catch (error) {
         handleCommandError(interaction, error);
+        return;
     }
 }

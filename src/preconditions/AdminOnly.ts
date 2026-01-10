@@ -1,5 +1,5 @@
 import { AllFlowsPrecondition } from '@sapphire/framework';
-import { CommandInteraction, Message, type ContextMenuCommandInteraction, type Snowflake } from 'discord.js';
+import { CommandInteraction, Message, type ContextMenuCommandInteraction } from 'discord.js';
 import { RoleId } from '../constants/roles.js';
 import { isGuildMember, isMessageInstance } from '@sapphire/discord.js-utilities';
 import { UserId } from '../constants/users.js';

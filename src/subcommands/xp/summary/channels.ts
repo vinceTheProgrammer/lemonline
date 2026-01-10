@@ -1,10 +1,8 @@
 import type { Command } from "@sapphire/framework";
-import { SlashCommandSubcommandGroupBuilder, MessageFlags, ChannelType } from "discord.js";
-import { ErrorType } from "../../../constants/errors.js";
-import { getAllChannelXpSettings, setChannelMultiplier } from "../../../utils/database.js";
-import { CustomError, handleCommandError } from "../../../utils/errors.js";
+import { SlashCommandSubcommandGroupBuilder, MessageFlags } from "discord.js";
+import { getAllChannelXpSettings } from "../../../utils/database.js";
+import { handleCommandError } from "../../../utils/errors.js";
 import { getDiscordRelativeTime } from "../../../utils/format.js";
-import { parseRelativeDate } from "../../../utils/time.js";
 
 export function scXpSummaryChannels(builder: SlashCommandSubcommandGroupBuilder) {
     return builder.addSubcommand((command) =>
@@ -29,5 +27,6 @@ export async function chatInputChannelsReal(interaction: Command.ChatInputComman
         return interaction.editReply({ content: xpSettingsString});
     } catch (error) {
         handleCommandError(interaction, error);
+        return;
     }
 }

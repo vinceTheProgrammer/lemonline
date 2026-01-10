@@ -1,15 +1,6 @@
 import { Command } from '@sapphire/framework';
-import { ChannelType, ForumChannel, AttachmentBuilder, ChannelFlags, MessageFlags, SlashCommandBuilder, type SlashCommandSubcommandsOnlyBuilder, type SlashCommandOptionsOnlyBuilder } from 'discord.js';
-import { CustomError, handleCommandError } from '../utils/errors.js';
-import { ErrorType } from '../constants/errors.js';
-import { getChannelXpSettingsEmbed, parseEmbeds } from '../utils/embeds.js';
-import { getAttachments } from '../utils/attachments.js';
-import { parseComponents } from '../utils/components.js';
+import { SlashCommandBuilder, type SlashCommandSubcommandsOnlyBuilder } from 'discord.js';
 import { Subcommand } from '@sapphire/plugin-subcommands';
-import { addXp, getChannelXpSettings, removeXp, setChannelBaseMessageXp, setChannelBaseThreadXp, setChannelMultiplier, setXp } from '../utils/database.js';
-import { parseRelativeDate } from '../utils/time.js';
-import { getDiscordRelativeTime } from '../utils/format.js';
-import { handlePrintLevelsInteraction } from '../utils/interactions.js';
 import { gXpConfig } from '../subcommands/xp/config/config.js';
 import { gXpSummary } from '../subcommands/xp/summary/summary.js';
 import { gXpUser } from '../subcommands/xp/user/user.js';
