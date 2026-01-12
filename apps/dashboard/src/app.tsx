@@ -4,7 +4,6 @@ import { createResource } from "solid-js";
 import { UserMenu } from './components/UserMenu';
 import { apiUri } from './api/xp';
 import { authVersion } from './auth';
-import {  } from "@solidjs/router";
 
 async function fetchMe() {
   const res = await fetch(apiUri('me'), {
