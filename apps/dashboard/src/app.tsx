@@ -44,7 +44,7 @@ const App: Component<{ children: Element }> = (props) => {
       <nav class="sticky top-0 z-50 border-b border-zinc-800 bg-zinc-900/80 backdrop-blur">
         <div class="mx-auto flex h-14 max-w-7xl items-center justify-between px-4">
           <div class="flex items-center gap-2">
-            <img src="/lemon.png" class="w-10"/>
+            <img src={`${import.meta.env.BASE_URL}lemon.png`} class="w-10"/>
             <span class="text-lg font-semibold tracking-tight">
               Lemonline Bot
             </span>
