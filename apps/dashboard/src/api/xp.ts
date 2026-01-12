@@ -1,6 +1,5 @@
 import { Address } from "../constants/address";
 import { XpConfig } from "../types/xp";
-import { isDev } from "solid-js";
 
 // src/api/xp.ts
 export async function fetchXpConfig(): Promise<XpConfig> {
@@ -25,9 +24,9 @@ patch: Partial<XpConfig>
 }
 
 export function apiUri(endpoint: string) : string {
-  const baseBack = isDev ? Address.LOCALHOSTNUMBACK : Address.BACKEND;
+  const baseBack = import.meta.env.DEV ? Address.LOCALHOSTNUMBACK : Address.BACKEND;
 
   return baseBack + '/api/' + endpoint;
 }
 
-export const OAUTH_URI = isDev ? `${Address.LOCALHOSTNUMBACK}/oauth/callback` : `${Address.BACKEND}/oauth/callback`;
+export const OAUTH_URI = import.meta.env.DEV ? `${Address.LOCALHOSTNUMBACK}/oauth/callback` : `${Address.BACKEND}/oauth/callback`;
