@@ -37,6 +37,8 @@ const App: Component<{ children: Element }> = (props) => {
   const isAdmin = createMemo(() =>
     user()?.roles?.includes("admin")
   );
+  
+  const navigate = useNavigate();
 
   return (
     <div class="min-h-screen bg-zinc-900 text-zinc-100">
@@ -78,7 +80,6 @@ const App: Component<{ children: Element }> = (props) => {
                 fallback={
                   <button
                     onClick={() => {
-                      const navigate = useNavigate();
                       navigate("/auth", { replace: true });
                     }}
                     class="rounded-md bg-indigo-500 px-4 py-2 text-sm font-medium
