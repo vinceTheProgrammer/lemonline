@@ -7,8 +7,8 @@ const getLoginDataQuery = query(async (code: string | string[] | undefined) => {
 
     if (!(typeof code == 'string')) return {};
     
-    const baseBack = import.meta.env ? Address.LOCALHOSTNUMBACK : Address.BACKEND;
-    const baseFront = import.meta.env ? Address.LOCALHOSTNUMFRONT : Address.FRONTEND;
+    const baseBack = import.meta.env.DEV ? Address.LOCALHOSTNUMBACK : Address.BACKEND;
+    const baseFront = import.meta.env.DEV ? Address.LOCALHOSTNUMFRONT : Address.FRONTEND;
 
     const client_id = '1388081907127812306';
     const sapphire_uri = `${baseBack}/oauth/callback`;
