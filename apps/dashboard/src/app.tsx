@@ -1,9 +1,10 @@
 import { createMemo, Show, Suspense, type Component } from 'solid-js';
-import { A, useLocation } from '@solidjs/router';
+import { A, useLocation, useNavigate } from '@solidjs/router';
 import { createResource } from "solid-js";
 import { UserMenu } from './components/UserMenu';
 import { apiUri } from './api/xp';
 import { authVersion } from './auth';
+import {  } from "@solidjs/router";
 
 async function fetchMe() {
   const res = await fetch(apiUri('me'), {
@@ -77,7 +78,10 @@ const App: Component<{ children: Element }> = (props) => {
                 when={user()}
                 fallback={
                   <button
-                    onClick={() => (window.location.href = `${import.meta.env.BASE_URL}auth`)}
+                    onClick={() => {
+                      const navigate = useNavigate();
+                      navigate("/auth", { replace: true });
+                    }}
                     class="rounded-md bg-indigo-500 px-4 py-2 text-sm font-medium
                           text-white transition hover:bg-indigo-400 active:bg-indigo-600"
                   >
