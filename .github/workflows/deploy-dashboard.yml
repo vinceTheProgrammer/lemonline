@@ -28,13 +28,18 @@ jobs:
         with:
           node-version: 20
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
       - name: Install dependencies
         working-directory: apps/dashboard
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Build Vite app
         working-directory: apps/dashboard
-        run: npm run build
+        run: pnpm build
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
