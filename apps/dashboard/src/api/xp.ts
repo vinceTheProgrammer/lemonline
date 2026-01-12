@@ -24,7 +24,10 @@ patch: Partial<XpConfig>
 }
 
 export function apiUri(endpoint: string) : string {
-  return Address.LOCALHOSTNUMBACK + '/api/' + endpoint;
+  const baseBack = import.meta.env ? Address.LOCALHOSTNUMBACK : Address.BACKEND;
+  const baseFront = import.meta.env ? Address.LOCALHOSTNUMFRONT : Address.FRONTEND;
+
+  return baseBack + '/api/' + endpoint;
 }
 
-export const OAUTH_URI = `${Address.LOCALHOSTNUMBACK}/oauth/callback`;
+export const OAUTH_URI = import.meta.env ? `${Address.LOCALHOSTNUMBACK}/oauth/callback` : `${Address.BACKEND}/oauth/callback`;

@@ -1,15 +1,18 @@
 import { createAsync, query, useNavigate, useSearchParams } from "@solidjs/router";
-import { createEffect, on, Show } from "solid-js";
+import { Show } from "solid-js";
 import { Address } from "../constants/address";
-import { authVersion, bumpAuth } from "../auth";
+import { bumpAuth } from "../auth";
 
 const getLoginDataQuery = query(async (code: string | string[] | undefined) => {
 
     if (!(typeof code == 'string')) return {};
+    
+    const baseBack = import.meta.env ? Address.LOCALHOSTNUMBACK : Address.BACKEND;
+    const baseFront = import.meta.env ? Address.LOCALHOSTNUMFRONT : Address.FRONTEND;
 
     const client_id = '1388081907127812306';
-    const sapphire_uri = `${Address.LOCALHOSTNUMBACK}/oauth/callback`;
-    const redirect_uri = 'http://localhost:3000/oauth/authorize';
+    const sapphire_uri = `${baseBack}/oauth/callback`;
+    const redirect_uri = `${baseFront}/oauth/authorize`;
 
     // Call the backend to exchange the code for an access token.
     const response = await fetch(sapphire_uri, {

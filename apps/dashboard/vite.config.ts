@@ -4,9 +4,9 @@ import devtools from 'solid-devtools/vite';
 
 export default defineConfig({
   plugins: [devtools(), solidPlugin()],
+  // This block only matters when running in dev mode.
   server: {
     port: 3000,
-    // TODO handle this with reverse proxy in production
     proxy: {
       "/auth": {
         target: "http://localhost:4000",
