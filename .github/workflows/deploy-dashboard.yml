@@ -41,6 +41,9 @@ jobs:
         working-directory: apps/dashboard
         run: pnpm build
 
+      - name: SPA fallback for GitHub Pages
+        run: cp apps/dashboard/dist/index.html apps/dashboard/dist/404.html
+
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
