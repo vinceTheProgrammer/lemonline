@@ -39,8 +39,6 @@ const App: Component<{ children: Element }> = (props) => {
     user()?.roles?.includes("admin")
   );
 
-  const navigate = useNavigate();
-
   return (
     <div class="min-h-screen bg-zinc-900 text-zinc-100">
       {/* NAVBAR */}
