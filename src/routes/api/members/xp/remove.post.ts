@@ -1,11 +1,13 @@
 import { Route } from '@sapphire/plugin-api';
-import { requireAdmin } from '../../../../lib/requireAdmin';
+import { isAdmin } from '../../../../lib/isAdmin';
 import { removeXp } from '../../../../utils/database';
 import { GuildId } from '../../../../constants/guilds';
 
 export class MemberXpRemoveRoute extends Route {
   public async run(request: Route.Request, response: Route.Response) {
-    if (!(await requireAdmin(request, response))) return;
+    if (!(await isAdmin(request))) {
+      return response.unauthorized();
+    }
 
     const body = await request.readBodyJson() as {
       userId: string;

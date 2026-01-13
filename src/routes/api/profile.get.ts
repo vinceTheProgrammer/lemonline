@@ -1,9 +1,9 @@
 import { Route } from '@sapphire/plugin-api';
-import { requireAdmin } from '../../lib/requireAdmin';
+import { DiscordAPIError } from 'discord.js';
+import { isAdmin } from '../../lib/isAdmin';
 import { GuildId } from '../../constants/guilds';
 import { findByDiscordId } from '../../utils/database';
 import { getLevelFromXp, getTotalXp } from '../../utils/xp';
-
 
 function getXpProgress(xp: number, level: number) {
   const currentLevelXp = getTotalXp(level);
@@ -14,51 +14,69 @@ function getXpProgress(xp: number, level: number) {
 
   const percent = Math.min(100, Math.max(0, (intoLevel / needed) * 100));
 
-  return {
-    intoLevel,
-    needed,
-    percent
-  };
+  return { intoLevel, needed, percent };
 }
 
 export class ProfileRoute extends Route {
-  public async run(_request: Route.Request, response: Route.Response) {
-    const auth = _request.auth;
-    if (auth) {
-      const user = await this.container.client.users.fetch(auth.id);
-      const member = await this.container.client.guilds.cache.get(GuildId.LemonlineStudios)?.members.fetch(user.id);
+  public async run(request: Route.Request, response: Route.Response) {
+    const auth = request.auth;
+    if (!auth) return response.unauthorized();
 
-      const isMember = member ? true : false;
-      const avatar = user.avatarURL();
-      const username = user.username;
-      const id = user.id;
-      const roles = [];
-      const joinDate = member?.joinedAt || null;
-      const databaseUser = await findByDiscordId(user.id);
-      const xp = databaseUser ? databaseUser.xp : null;
-      const level = xp ? getLevelFromXp(xp) : null;
-      const messageCount = databaseUser ? databaseUser.messageCount : null;
-      const xpProgress = xp && level ? getXpProgress(xp, level) : null;
-      
-      const adminCheckResult = await requireAdmin(_request, response);
+    const client = this.container.client;
 
-      if (adminCheckResult) roles.push('admin');
+    // Fetch Discord user (always valid if authenticated)
+    const user = await client.users.fetch(auth.id);
 
-      const profile = {
-        avatar,
-        username,
-        id,
-        roles,
-        isMember,
-        joinDate,
-        xp,
-        level,
-        messageCount,
-        xpProgress
-      };
+    const guild = client.guilds.cache.get(GuildId.LemonlineStudios);
 
-      return response.ok(profile);
+    let member = null;
+
+    if (guild) {
+      try {
+        member = await guild.members.fetch(user.id);
+      } catch (error) {
+        // Unknown Member = user is not in the guild → normal case
+        if (
+          error instanceof DiscordAPIError &&
+          error.code === 10007
+        ) {
+          member = null;
+        } else {
+          // Unexpected error should still surface
+          throw error;
+        }
+      }
     }
-    else return response.unauthorized();
+
+    const isMember = Boolean(member);
+    const joinDate = member?.joinedAt ?? null;
+
+    const databaseUser = await findByDiscordId(user.id);
+    const xp = databaseUser?.xp ?? null;
+    const level = xp !== null ? getLevelFromXp(xp) : null;
+    const messageCount = databaseUser?.messageCount ?? null;
+    const xpProgress =
+      xp !== null && level !== null ? getXpProgress(xp, level) : null;
+
+    const roles: string[] = [];
+
+    if (await isAdmin(request)) {
+      roles.push('admin');
+    }
+
+    const profile = {
+      avatar: user.avatarURL(),
+      username: user.username,
+      id: user.id,
+      roles,
+      isMember,
+      joinDate,
+      xp,
+      level,
+      messageCount,
+      xpProgress
+    };
+
+    return response.ok(profile);
   }
 }

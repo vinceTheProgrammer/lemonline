@@ -39,6 +39,10 @@ const App: Component<{ children: Element }> = (props) => {
     user()?.roles?.includes("admin")
   );
 
+  const isMember = createMemo(() =>
+    user()?.roles?.includes("member")
+  );
+
   return (
     <div class="min-h-screen bg-zinc-900 text-zinc-100">
       {/* NAVBAR */}
@@ -60,7 +64,7 @@ const App: Component<{ children: Element }> = (props) => {
               <A href="/profile" class={navLink('/profile')}>Profile</A>
               </li>
             </Show>
-            <Show when={user()}>
+            <Show when={isMember()}>
               <li>
                 <A href="/leaderboard" class={navLink('/leaderboard')}>Leaderboard</A>
               </li>

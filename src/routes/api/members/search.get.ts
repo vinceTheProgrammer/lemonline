@@ -1,12 +1,14 @@
 import { Route } from '@sapphire/plugin-api';
-import { requireAdmin } from '../../../lib/requireAdmin';
+import { isAdmin } from '../../../lib/isAdmin';
 import { searchMembers } from '../../../utils/database';
 import { GuildId } from '../../../constants/guilds';
 import { getLevelFromXp } from '../../../utils/xp';
 
 export class LeaderboardRoute extends Route {
   public async run(request: Route.Request, response: Route.Response) {
-    if (!(await requireAdmin(request, response))) return;
+    if (!(await isAdmin(request))) {
+      return response.unauthorized();
+    }
     
     const params = request.query;
 

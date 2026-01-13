@@ -21,15 +21,13 @@ type ProfileData = {
 };
 
 async function fetchProfile(): Promise<ProfileData | null> {
-  const res = await fetch(apiUri("profile"), {
-    credentials: "include"
-  });
+  const res = await fetch(apiUri("profile"), { credentials: "include" });
   if (!res.ok) return null;
   return res.json();
 }
 
 function formatDate(date: Date | string | null) {
-  if (!date) return "Unknown";
+  if (!date) return "—";
   const d = new Date(date);
   return d.toLocaleDateString(undefined, {
     year: "numeric",
@@ -81,7 +79,14 @@ export default function Profile() {
                       </span>
                     </Show>
 
-                    <Show when={p().isMember}>
+                    <Show
+                      when={p().isMember}
+                      fallback={
+                        <span class="rounded-full bg-zinc-700 px-3 py-1 text-xs text-zinc-300">
+                          Not a server member
+                        </span>
+                      }
+                    >
                       <span class="rounded-full bg-emerald-500/20 px-3 py-1 text-xs text-emerald-300">
                         Server Member
                       </span>
@@ -91,58 +96,66 @@ export default function Profile() {
               </div>
             </section>
 
-            {/* XP PROGRESS */}
-            <Show when={p().xpProgress && p().level !== null}>
-              <section class="rounded-lg border border-zinc-800 bg-zinc-800 p-6 space-y-3">
-                <div class="flex items-center justify-between text-sm">
-                  <span class="text-zinc-400">
-                    Level {p().level}
-                  </span>
-                  <span class="text-zinc-400">
-                    {p().xpProgress!.intoLevel} / {p().xpProgress!.needed} XP
-                  </span>
-                </div>
-
-                <div class="h-3 w-full overflow-hidden rounded-full bg-zinc-700">
-                  <div
-                    class="h-full rounded-full bg-indigo-500 transition-all"
-                    style={{ width: `${p().xpProgress!.percent}%` }}
-                  />
-                </div>
-
-                <p class="text-xs text-zinc-400">
-                  {p().xpProgress!.percent.toFixed(1)}% to next level
+            {/* NON-MEMBER NOTICE */}
+            <Show when={!p().isMember}>
+              <section class="rounded-lg border border-amber-500/30 bg-amber-500/10 p-6 text-sm text-amber-200">
+                <p class="font-medium">
+                  You’re not a member of the Lemonline Studios Discord server.
+                </p>
+                <p class="mt-1 text-amber-300/80">
+                  Join the server to earn XP, levels, and appear on the leaderboard.
                 </p>
               </section>
             </Show>
 
-            {/* STATS */}
-            <section class="grid grid-cols-1 gap-4 sm:grid-cols-3">
-              <StatCard
-                label="Level"
-                value={p().level}
-              />
-              <StatCard
-                label="Total XP"
-                value={p().xp}
-              />
-              <StatCard
-                label="Messages Sent"
-                value={p().messageCount}
-              />
-            </section>
+            {/* MEMBER-ONLY CONTENT */}
+            <Show when={p().isMember}>
+              <>
+                {/* XP PROGRESS */}
+                <Show when={p().xpProgress && p().level !== null}>
+                  <section class="rounded-lg border border-zinc-800 bg-zinc-800 p-6 space-y-3">
+                    <div class="flex items-center justify-between text-sm">
+                      <span class="text-zinc-400">
+                        Level {p().level}
+                      </span>
+                      <span class="text-zinc-400">
+                        {p().xpProgress!.intoLevel} / {p().xpProgress!.needed} XP
+                      </span>
+                    </div>
 
-            {/* ACCOUNT INFO */}
-            <section class="rounded-lg border border-zinc-800 bg-zinc-800 p-6 space-y-2">
-              <h3 class="text-lg font-medium">
-                Account Info
-              </h3>
+                    <div class="h-3 w-full overflow-hidden rounded-full bg-zinc-700">
+                      <div
+                        class="h-full rounded-full bg-indigo-500 transition-all"
+                        style={{ width: `${p().xpProgress!.percent}%` }}
+                      />
+                    </div>
 
-              <div class="flex justify-between text-sm">
-                <span class="text-zinc-400">Joined Server</span>
-                <span>{formatDate(p().joinDate)}</span>
-              </div>
-            </section>
+                    <p class="text-xs text-zinc-400">
+                      {p().xpProgress!.percent.toFixed(1)}% to next level
+                    </p>
+                  </section>
+                </Show>
+
+                {/* STATS */}
+                <section class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                  <StatCard label="Level" value={p().level} />
+                  <StatCard label="Total XP" value={p().xp} />
+                  <StatCard label="Messages Sent" value={p().messageCount} />
+                </section>
+
+                {/* ACCOUNT INFO */}
+                <section class="rounded-lg border border-zinc-800 bg-zinc-800 p-6 space-y-2">
+                  <h3 class="text-lg font-medium">
+                    Account Info
+                  </h3>
+
+                  <div class="flex justify-between text-sm">
+                    <span class="text-zinc-400">Joined Server</span>
+                    <span>{formatDate(p().joinDate)}</span>
+                  </div>
+                </section>
+              </>
+            </Show>
           </>
         )}
       </Show>
@@ -150,15 +163,10 @@ export default function Profile() {
   );
 }
 
-function StatCard(props: {
-  label: string;
-  value: number | null;
-}) {
+function StatCard(props: { label: string; value: number | null }) {
   return (
     <div class="rounded-lg border border-zinc-800 bg-zinc-800 p-4 text-center">
-      <p class="text-sm text-zinc-400">
-        {props.label}
-      </p>
+      <p class="text-sm text-zinc-400">{props.label}</p>
       <p class="mt-1 text-2xl font-semibold">
         {props.value ?? "—"}
       </p>

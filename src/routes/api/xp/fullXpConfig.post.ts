@@ -2,11 +2,13 @@
 import { Route } from '@sapphire/plugin-api';
 import { updateFullXpConfigWeb } from '../../../services/xpConfig';
 import { XpConfig } from '../../../types/xp';
-import { requireAdmin } from '../../../lib/requireAdmin';
+import { isAdmin } from '../../../lib/isAdmin';
 
 export class FullXpConfigPostRoute extends Route {
   public async run(request: Route.Request, response: Route.Response) {
-    if (!(await requireAdmin(request, response))) return;
+    if (!(await isAdmin(request))) {
+      return response.unauthorized();
+    }
 
     try {
       const body = (await request.readBodyJson()) as XpConfig;

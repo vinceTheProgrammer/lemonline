@@ -1,11 +1,12 @@
 import { Route } from '@sapphire/plugin-api';
 import { getUsersPaginated } from '../../utils/database';
+import { isLemonLineMember } from '../../lib/isLemonLineMember';
 
 export class LeaderboardRoute extends Route {
-  public async run(_request: Route.Request, response: Route.Response) {
-    const auth = _request.auth;
-    if (auth) {
-        const params = _request.query;
+  public async run(request: Route.Request, response: Route.Response) {
+    const auth = request.auth;
+    if (auth && await isLemonLineMember(request, this.container)) {
+        const params = request.query;
 
         const perPage = Math.min(
             Math.max(Number(params['perPage']) || 25, 1),

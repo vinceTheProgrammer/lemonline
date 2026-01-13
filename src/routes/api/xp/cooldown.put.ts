@@ -1,10 +1,12 @@
 import { Route } from '@sapphire/plugin-api';
 import { setServerCooldown } from '../../../services/xpConfig';
-import { requireAdmin } from '../../../lib/requireAdmin';
+import { isAdmin } from '../../../lib/isAdmin';
 
 export class XpServerCooldownRoute extends Route {
   public async run(request: Route.Request, response: Route.Response) {
-    if (!(await requireAdmin(request, response))) return;
+    if (!(await isAdmin(request))) {
+      return response.unauthorized();
+    }
 
     const body = await request.readBodyJson() as { seconds?: number };
 
