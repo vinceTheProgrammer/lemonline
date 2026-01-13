@@ -78,7 +78,7 @@ const App: Component<{ children: Element }> = (props) => {
                 when={user()}
                 fallback={
                   <button
-                    onClick={() => (window.location.href = `${Address.BACKEND}/auth`)}
+                    onClick={() => (window.location.href = import.meta.env.DEV ? `${Address.LOCALHOSTNUMBACK}/auth` : `${Address.BACKEND}/auth`)}
                     class="rounded-md bg-indigo-500 px-4 py-2 text-sm font-medium
                           text-white transition hover:bg-indigo-400 active:bg-indigo-600"
                   >

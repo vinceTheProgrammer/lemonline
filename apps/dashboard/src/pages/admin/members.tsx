@@ -17,13 +17,19 @@ export default function Members() {
   const [xpAmount, setXpAmount] = createSignal<number>(0);
   const [levelAmount, setLevelAmount] = createSignal<number>(0);
 
+  const [hasSearched, setHasSearched] = createSignal(false);
+
   const search = async () => {
+    setHasSearched(true);
+
     const res = await fetch(
       `${apiUri("members/search")}?q=${encodeURIComponent(query())}`,
       { credentials: "include" }
     );
     if (res.ok) {
       setResults(await res.json());
+    } else {
+      setResults([]);
     }
   };
 
@@ -82,7 +88,16 @@ export default function Members() {
           </button>
         </div>
 
-        <Show when={results().length > 0}>
+        <Show when={results().length > 0} fallback={
+          <Show when={hasSearched()}>
+            <div class="rounded-md border border-zinc-700 bg-zinc-900 p-4 text-sm text-zinc-400">
+              No members found matching
+              <span class="mx-1 font-medium text-zinc-300">
+                “{query()}”
+              </span>
+            </div>
+          </Show>
+        }>
           <div class="divide-y divide-zinc-700">
             <For each={results()}>
               {(m) => (
@@ -92,7 +107,7 @@ export default function Members() {
                     setLevelAmount(m.level);
                   }}
                   class="w-full flex items-center gap-3 px-2 py-3
-                         text-left hover:bg-zinc-700/50 transition"
+                        text-left hover:bg-zinc-700/50 transition"
                 >
                   <img
                     src={m.avatar ?? "/default-avatar.png"}
@@ -109,6 +124,7 @@ export default function Members() {
             </For>
           </div>
         </Show>
+
       </section>
 
       {/* MEMBER CONTROLS */}

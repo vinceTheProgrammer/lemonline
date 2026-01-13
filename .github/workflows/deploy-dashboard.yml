@@ -39,7 +39,7 @@ jobs:
 
       - name: Build Vite app
         working-directory: apps/dashboard
-        run: pnpm build
+        run: pnpm build --base=/lemonline/
 
       - name: SPA fallback for GitHub Pages
         run: cp apps/dashboard/dist/index.html apps/dashboard/dist/404.html
