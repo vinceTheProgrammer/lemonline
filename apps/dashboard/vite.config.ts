@@ -5,7 +5,7 @@ import devtools from 'solid-devtools/vite';
 export default defineConfig({
   plugins: [devtools(), solidPlugin()],
   // needed for production when deployed on github pages
-  base: '/lemonline',
+  base: '/lemonline/',
   // This block only matters when running in dev mode.
   server: {
     port: 3000,
