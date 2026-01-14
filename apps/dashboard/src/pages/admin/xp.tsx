@@ -68,55 +68,84 @@ export default function Xp() {
   });  
 
   return (
-    <main class="space-y-8">
+    <main class="space-y-6 sm:space-y-8 overflow-x-hidden">
       {/* HEADER */}
-      <div>
-        <h1 class="text-2xl font-semibold tracking-tight">
+      <div class="space-y-1">
+        <h1 class="text-xl sm:text-2xl font-semibold tracking-tight">
           XP Configuration
         </h1>
-        <p class="mt-1 text-sm text-zinc-400">
+        <p class="text-sm text-zinc-400 max-w-prose">
           Configure XP gain, boosts, and level rewards for your server.
         </p>
       </div>
-
+  
       {config() && (
         <div class="space-y-6">
           {/* CARD */}
-          <section class="rounded-lg border border-zinc-800 bg-zinc-800 p-6">
-            <Show when={allChannels() && (allChannels() as ChannelNameIdType[]).length && config()}>
-            <ChannelXpRuleEditor
-              value={config()!.channelXpRules}
-              onChange={v =>
-                setConfig(c => ({ ...c, channelXpRules: v }))
+          <section
+            class="rounded-lg border border-zinc-800 bg-zinc-800
+                   p-4 sm:p-6
+                   overflow-x-hidden"
+          >
+            <Show
+              when={
+                allChannels() &&
+                (allChannels() as ChannelNameIdType[]).length &&
+                config()
               }
-              channels={allChannels() as ChannelNameIdType[]}
-            />
+            >
+              {/* IMPORTANT: isolate horizontal overflow */}
+              <div class="relative -mx-4 sm:mx-0">
+                <div class="overflow-x-auto px-4 sm:px-0">
+                  <div class="min-w-[640px] sm:min-w-0">
+                    <ChannelXpRuleEditor
+                      value={config()!.channelXpRules}
+                      onChange={v =>
+                        setConfig(c => ({ ...c, channelXpRules: v }))
+                      }
+                      channels={allChannels() as ChannelNameIdType[]}
+                    />
+                  </div>
+                </div>
+              </div>
             </Show>
           </section>
-
+  
+          {/* UNSAVED CHANGES BAR */}
           <Show when={hasUnsavedChanges()}>
             <div
-              class="fixed bottom-0 left-0 right-0 z-50
-                    border-t border-zinc-800 bg-zinc-900/95 backdrop-blur
-                    px-6 py-4"
+              class="fixed inset-x-0 bottom-0 z-50 pb-safe
+                     border-t border-zinc-800
+                     bg-zinc-900/95 backdrop-blur"
             >
-              <div class="mx-auto flex max-w-6xl items-center justify-between">
+              <div
+                class="mx-auto max-w-6xl
+                       px-4 py-4
+                       flex flex-col gap-3
+                       sm:flex-row sm:items-center sm:justify-between"
+              >
                 <span class="text-sm text-zinc-300">
                   You have unsaved changes
                 </span>
-
-                <div class="flex gap-3">
+  
+                <div class="flex flex-col sm:flex-row gap-2 sm:gap-3">
                   <button
-                    class="rounded-md border border-zinc-700 px-4 py-2 text-sm
-                          text-zinc-300 hover:bg-zinc-800 transition"
-                    onClick={() => setConfig(structuredClone(savedConfig()))}
+                    class="w-full sm:w-auto
+                           rounded-md border border-zinc-700
+                           px-4 py-2 text-sm
+                           text-zinc-300 hover:bg-zinc-800 transition"
+                    onClick={() =>
+                      setConfig(structuredClone(savedConfig()))
+                    }
                   >
                     Discard
                   </button>
-
+  
                   <button
-                    class="rounded-md bg-indigo-500 px-5 py-2 text-sm font-medium
-                          text-white hover:bg-indigo-400 transition"
+                    class="w-full sm:w-auto
+                           rounded-md bg-indigo-500
+                           px-5 py-2 text-sm font-medium
+                           text-white hover:bg-indigo-400 transition"
                     onClick={save}
                   >
                     Save Changes
@@ -125,19 +154,9 @@ export default function Xp() {
               </div>
             </div>
           </Show>
-
-          {/* SAVE BUTTON */}
-          <div class="flex justify-end">
-            <button
-              onClick={save}
-              class="rounded-md bg-indigo-500 px-6 py-2 font-medium
-                     text-white transition hover:bg-indigo-400 active:bg-indigo-600"
-            >
-              Save Changes
-            </button>
-          </div>
         </div>
       )}
     </main>
   );
+  
 }

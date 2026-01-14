@@ -13,7 +13,7 @@ export class FullXpConfigPostRoute extends Route {
     try {
       const body = (await request.readBodyJson()) as XpConfig;
 
-      await updateFullXpConfigWeb(body);
+      await updateFullXpConfigWeb(body, this.container);
 
       return response.noContent();
     } catch (error) {

@@ -100,7 +100,7 @@ export default function Levels() {
 
           <Show when={hasUnsavedChanges()}>
             <div
-              class="fixed bottom-0 left-0 right-0 z-50
+              class="fixed bottom-0 inset-x-0 z-50 pb-safe
                     border-t border-zinc-800 bg-zinc-900/95 backdrop-blur
                     px-6 py-4"
             >
@@ -131,17 +131,6 @@ export default function Levels() {
           </Show>
 
           <LevelsPreview formula={() => config()?.levelFormula ?? ""} />
-
-          {/* SAVE BUTTON */}
-          <div class="flex justify-end">
-            <button
-              onClick={save}
-              class="rounded-md bg-indigo-500 px-6 py-2 font-medium
-                     text-white transition hover:bg-indigo-400 active:bg-indigo-600"
-            >
-              Save Changes
-            </button>
-          </div>
         </div>
       )}
     </main>

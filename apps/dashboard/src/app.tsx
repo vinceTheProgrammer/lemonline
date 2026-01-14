@@ -1,4 +1,4 @@
-import { createMemo, Show, Suspense, type Component } from 'solid-js';
+import { createMemo, createSignal, Show, Suspense, type Component } from 'solid-js';
 import { A, useLocation } from '@solidjs/router';
 import { createResource } from "solid-js";
 import { UserMenu } from './components/UserMenu';
@@ -20,6 +20,8 @@ const App: Component<{ children: Element }> = (props) => {
   const [user] = createResource(authVersion, fetchMe);
 
   const location = useLocation();
+
+  const [mobileNavOpen, setMobileNavOpen] = createSignal<boolean>(false);
 
   const navLink = (path: string) => {
     const active =
@@ -55,7 +57,7 @@ const App: Component<{ children: Element }> = (props) => {
             </span>
           </div>
 
-          <ul class="flex items-center gap-1">
+          <ul class="hidden md:flex items-center gap-1">
             <li>
               <A href="/" class={navLink('/')}>Home</A>
             </li>
@@ -75,6 +77,73 @@ const App: Component<{ children: Element }> = (props) => {
               </li>
             </Show>
           </ul>
+
+          {/* MOBILE NAV */}
+          <div class="md:hidden">
+            <button
+              aria-label="Open menu"
+              class="rounded-md p-2 text-zinc-300 hover:bg-zinc-700 transition"
+              onClick={() => setMobileNavOpen(v => !v)}
+            >
+              ☰
+            </button>
+          </div>
+
+          <Show when={mobileNavOpen()}>
+            <div
+              class="fixed inset-x-0 top-14 z-40
+                    border-b border-zinc-800
+                    bg-zinc-900/95 backdrop-blur
+                    shadow-lg"
+            >
+              <nav class="mx-auto max-w-7xl px-4 py-4 space-y-1">
+                {/* PRIMARY LINKS */}
+                <A
+                  href="/"
+                  onClick={() => setMobileNavOpen(false)}
+                  class="block rounded-lg px-4 py-3 text-base font-medium
+                        text-zinc-100 hover:bg-zinc-800 transition"
+                >
+                  Home
+                </A>
+
+                <Show when={user()}>
+                  <A
+                    href="/profile"
+                    onClick={() => setMobileNavOpen(false)}
+                    class="block rounded-lg px-4 py-3 text-base font-medium
+                          text-zinc-100 hover:bg-zinc-800 transition"
+                  >
+                    Profile
+                  </A>
+                </Show>
+
+                <Show when={isMember()}>
+                  <A
+                    href="/leaderboard"
+                    onClick={() => setMobileNavOpen(false)}
+                    class="block rounded-lg px-4 py-3 text-base font-medium
+                          text-zinc-100 hover:bg-zinc-800 transition"
+                  >
+                    Leaderboard
+                  </A>
+                </Show>
+
+                <Show when={isAdmin()}>
+                  <div class="pt-2 mt-2 border-t border-zinc-800">
+                    <A
+                      href="/admin/xp"
+                      onClick={() => setMobileNavOpen(false)}
+                      class="block rounded-lg px-4 py-3 text-base font-medium
+                            text-indigo-400 hover:bg-zinc-800 transition"
+                    >
+                      Admin
+                    </A>
+                  </div>
+                </Show>
+              </nav>
+            </div>
+          </Show>
 
           <div>
             <Suspense fallback={null}>
@@ -99,7 +168,7 @@ const App: Component<{ children: Element }> = (props) => {
       </nav>
 
       {/* PAGE CONTENT */}
-      <main class="mx-auto max-w-7xl px-4 py-8">
+      <main class="mx-auto max-w-7xl px-4 py-4 md:py-8">
         <Suspense fallback={<p class="text-zinc-400">Loading…</p>}>
           {props.children}
         </Suspense>

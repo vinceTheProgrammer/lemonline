@@ -8,16 +8,18 @@ interface XpCurveUplotProps {
 }
 
 export function XpCurveUplot(props: XpCurveUplotProps) {
+  let containerRef!: HTMLDivElement;
   let chartRef!: HTMLDivElement;
   let plot: uPlot | undefined;
+  let resizeObserver: ResizeObserver;
 
   const makeData = (): AlignedData => [
     props.values.map((_, i) => i + 1),
     props.values,
   ];
 
-  const makeOpts = (): Options => ({
-    width: 400,
+  const makeOpts = (width: number): Options => ({
+    width,
     height: 180,
     scales: {
       x: { time: false },
@@ -30,34 +32,45 @@ export function XpCurveUplot(props: XpCurveUplotProps) {
     series: [
       {},
       {
-        label: props.label, // 🔑 recreated
+        label: props.label,
         stroke: "#4f46e5",
         width: 2,
       },
     ],
   });
 
+  const createPlot = () => {
+    const width = Math.max(containerRef.clientWidth, 280); // clamp for mobile
+    plot?.destroy();
+    plot = new uPlot(makeOpts(width), makeData(), chartRef);
+  };
+
   onMount(() => {
-    plot = new uPlot(makeOpts(), makeData(), chartRef);
+    createPlot();
+
+    resizeObserver = new ResizeObserver(() => {
+      createPlot();
+    });
+
+    resizeObserver.observe(containerRef);
   });
 
-  // Update data only
   createEffect(() => {
     if (!plot) return;
     plot.setData(makeData());
   });
 
-  // 🔑 Recreate when label changes
-  createEffect(() => {
-    if (!plot) return;
-
-    plot.destroy();
-    plot = new uPlot(makeOpts(), makeData(), chartRef);
-  });
-
   onCleanup(() => {
+    resizeObserver?.disconnect();
     plot?.destroy();
   });
 
-  return <div ref={chartRef} />;
+  return (
+    <div
+      ref={containerRef}
+      class="w-full overflow-hidden"
+    >
+      <div ref={chartRef} />
+    </div>
+  );
 }

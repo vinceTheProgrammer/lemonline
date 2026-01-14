@@ -4,6 +4,7 @@ import { ChannelXpRule, LevelRole, XpConfig } from "../types/xp.js";
 import { CustomError } from "../utils/custom-error.js";
 import { ErrorType } from "../constants/errors.js";
 import { setLocalFormula } from "../utils/xp.js";
+import { Container } from "@sapphire/framework";
 
 export async function setChannelBaseXp(options: {
     channelId: string;
@@ -83,7 +84,7 @@ export async function setChannelBaseXp(options: {
     }
   }
 
-  export async function updateFullXpConfigWeb(config: XpConfig): Promise<void> {
+  export async function updateFullXpConfigWeb(config: XpConfig, container: Container): Promise<void> {
     try {
       // --------------------
       // Server-level settings
@@ -158,6 +159,14 @@ export async function setChannelBaseXp(options: {
       // Level roles (diff-based)
       // --------------------
       const existingRoles = await fetchLevelRoles();
+
+      const guildRoles = await (await container.client.guilds.fetch(GuildId.LemonlineStudios)).roles.fetch(); // however you already do this
+      const validRoleIds = new Set(guildRoles.map(r => r.id));
+
+      const validLevelRoles = config.levelRoles.filter(r =>
+        r.roleId &&
+        validRoleIds.has(r.roleId)
+      );      
   
       const desiredKey = (r: LevelRole) =>
         `${r.level}:${r.roleId}`;
@@ -165,17 +174,16 @@ export async function setChannelBaseXp(options: {
       const existingKey = (r: { levelId: number; roleId: string; gained: boolean }) =>
         `${r.levelId}:${r.roleId}`;
   
-      const desired = new Set(config.levelRoles.map(desiredKey));
-      //const existing = new Set(existingRoles.map(existingKey));
+      const desired = new Set(validLevelRoles.map(desiredKey));
   
       // Add missing
-      for (const role of config.levelRoles) {
+      for (const role of validLevelRoles) {
         await setLevelRole({
           level: role.level,
           roleId: role.roleId,
           type: role.result,
         });
-      }
+      }      
   
       // Remove extra
       for (const role of existingRoles) {

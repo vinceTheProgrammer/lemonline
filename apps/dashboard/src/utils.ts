@@ -14,3 +14,17 @@ export function createDebounced<T>(source: () => T, delay = 200) {
 
   return debounced;
 }
+
+export type EditorMode = "compact" | "full";
+
+export function createMediaQuery(query: string) {
+  const mql = window.matchMedia(query);
+  const [matches, setMatches] = createSignal(mql.matches);
+
+  const handler = (e: MediaQueryListEvent) => setMatches(e.matches);
+  mql.addEventListener("change", handler);
+
+  onCleanup(() => mql.removeEventListener("change", handler));
+
+  return matches;
+}

@@ -158,7 +158,7 @@ export function ChannelXpRuleEditor(props: {
         {({rule: row, index }) => (
           <div class="rounded-lg border border-zinc-800 bg-zinc-900 p-4 space-y-4">
             {/* Channel + remove */}
-            <div class="flex items-center gap-4">
+            <div class="flex items-center gap-4 min-w-0">
               <ChannelSelect
                 value={row.channelId}
                 channels={filteredChannels}
@@ -178,7 +178,7 @@ export function ChannelXpRuleEditor(props: {
 
             {/* Base XP */}
             <div class="grid grid-cols-2 gap-4">
-              <label class="flex flex-col gap-1 text-sm">
+              <label class="flex flex-col gap-1 text-sm min-w-0">
                 <span class="text-zinc-400">Message XP</span>
                 <input
                   type="number"
@@ -194,7 +194,7 @@ export function ChannelXpRuleEditor(props: {
                 />
               </label>
 
-              <label class="flex flex-col gap-1 text-sm">
+              <label class="flex flex-col gap-1 text-sm min-w-0">
                 <span class="text-zinc-400">Thread XP</span>
                 <input
                   type="number"
@@ -217,7 +217,7 @@ export function ChannelXpRuleEditor(props: {
                   ? "border-red-500/40 bg-red-500/5"
                   : "border-zinc-800 bg-zinc-900"
                 }`}>
-              <label class="flex flex-col gap-1 text-sm">
+              <label class="flex flex-col gap-1 text-sm min-w-0">
                 <span class="text-zinc-400">XP Multiplier</span>
                 <input
                   type="number"
@@ -238,13 +238,13 @@ export function ChannelXpRuleEditor(props: {
               </label>
 
               {/* Expiration */}
-              <label class="flex flex-col gap-1 text-sm">
+              <label class="flex flex-col gap-1 text-sm min-w-0">
                 <span class="text-zinc-400">Boost Expiration</span>
 
-                <div class="flex gap-2">
+                <div class="flex gap-2 min-w-0">
                   <input
                     type="date"
-                    class="flex-1 rounded-md bg-zinc-800 px-3 py-2
+                    class="flex-1 min-w-0 rounded-md bg-zinc-800 px-3 py-2
                           border border-zinc-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     value={getLocalDate(row.expiration)}
                     onInput={e => {

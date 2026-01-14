@@ -2,9 +2,9 @@ import { A } from "@solidjs/router";
 
 export default function Admin(props: any) {
   return (
-    <div class="flex min-h-[calc(100vh-3.5rem)] gap-6">
+    <div class="flex flex-col md:flex-row min-h-[calc(100vh-3.5rem)] gap-6">
       {/* SIDEBAR */}
-      <aside class="w-56 shrink-0 rounded-lg border border-zinc-800 bg-zinc-800 p-4">
+      <aside class="w-full md:w-56 shrink-0">
         <h1 class="mb-4 text-lg font-semibold">
           Admin
         </h1>
