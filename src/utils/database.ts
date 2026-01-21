@@ -605,73 +605,37 @@ export async function getRolesForLevel(
     } catch (error) {
         throw handlePrismaError(error);
     }
-} 
+}
 
-export async function getRoleDeltaForLevelChange(
-    oldLevel: number,
-    newLevel: number
-): Promise<{ add: string[]; remove: string[] }> {
-    try {
-        if (oldLevel === newLevel) {
-        return { add: [], remove: [] };
-        }
-
-        const goingUp = newLevel > oldLevel;
-
-        const min = Math.min(oldLevel, newLevel) + 1;
-        const max = Math.max(oldLevel, newLevel);
-
-        // Only fetch role changes in the crossed range
-        const levelRoles = await prisma.levelRole.findMany({
+export async function getAbsoluteRolesAtLevel(
+    level: number
+): Promise<Set<string>> {
+    const levelRoles = await prisma.levelRole.findMany({
         where: {
-            levelId: {
-            gte: min,
-            lte: max,
-            },
+        levelId: { lte: level },
         },
         orderBy: {
-            levelId: "asc",
+        levelId: "asc",
         },
         select: {
-            roleId: true,
-            gained: true,
+        roleId: true,
+        gained: true,
         },
-        });
+    });
 
-        const add = new Set<string>();
-        const remove = new Set<string>();
+    const finalRoleState = new Map<string, boolean>();
 
-        for (const lr of levelRoles) {
-        if (goingUp) {
-            // leveling up → apply gained/removals as-is
-            if (lr.gained) {
-            add.add(lr.roleId);
-            remove.delete(lr.roleId);
-            } else {
-            remove.add(lr.roleId);
-            add.delete(lr.roleId);
-            }
-        } else {
-            // leveling down → reverse the operation
-            if (lr.gained) {
-            remove.add(lr.roleId);
-            add.delete(lr.roleId);
-            } else {
-            add.add(lr.roleId);
-            remove.delete(lr.roleId);
-            }
-        }
-        }
-
-        return {
-        add: [...add],
-        remove: [...remove],
-        };
-    } catch (error) {
-        throw handlePrismaError(error);
+    for (const lr of levelRoles) {
+        finalRoleState.set(lr.roleId, lr.gained);
     }
+
+    const roles = new Set<string>();
+    for (const [roleId, gained] of finalRoleState) {
+        if (gained) roles.add(roleId);
+    }
+
+    return roles;
 }  
-  
 
 export async function getServerXpSettings(guildId: string) {
     try {

@@ -1,6 +1,7 @@
 import { Route } from '@sapphire/plugin-api';
 import { getUsersPaginated } from '../../utils/database';
 import { isLemonLineMember } from '../../lib/isLemonLineMember';
+import { User } from 'discord.js';
 
 export class LeaderboardRoute extends Route {
   public async run(request: Route.Request, response: Route.Response) {
@@ -24,13 +25,23 @@ export class LeaderboardRoute extends Route {
           );
 
         const newDataMapResult = result.data.map(async (user) => {
-            const discordUser = await this.container.client.users.cache.get(user.discordId);
+          let discordUser : User | undefined;
+            try {
+              discordUser = await this.container.client.users.fetch(user.discordId);
+            } catch {
+              console.log(`unknown discord user when fetching discord user for leaderboard page. (${user.discordId})`);
+              return {
+                ...user,
+                avatar: null,
+                username: "Unknown user"
+              }; 
+            }
             const avatar = discordUser?.avatarURL() || null;
             const username = discordUser?.username;
             return {
                 ...user,
                 avatar,
-                username
+                username: username || "Unknown user"
             };
         });
 
