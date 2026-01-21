@@ -255,7 +255,7 @@ export async function addXp(discordId: string, amount: number, guild: Guild) {
 
         const oldXp = user.xp - amount;
 
-        await updateUserRoles(user, oldXp, guild);
+        updateUserRoles(user, oldXp, guild);
 
         return user;
     } catch (error) {
@@ -284,8 +284,7 @@ export async function removeXp(discordId: string, amount: number, guild: Guild) 
           data: { xp: newXp },
         });
   
-        // You can call updateUserRoles here or after the transaction
-        await updateUserRoles(updated, oldXp, guild);
+        updateUserRoles(updated, oldXp, guild);
   
         return updated;
       });
@@ -326,7 +325,7 @@ export async function setXp(discordId: string, amount: number, guild: Guild) {
         create: { discordId, xp: amount },
       });
   
-      await updateUserRoles(user, oldXp, guild);
+      updateUserRoles(user, oldXp, guild);
   
       return user;
     } catch (error) {
