@@ -4,6 +4,11 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+patchedDependencies:
+  '@sapphire/plugin-api':
+    hash: 8d773c87841f18612e76e11e5925099f7a50ba9ac6e2d798ce6700f85a084720
+    path: patches/@sapphire__plugin-api.patch
+
 importers:
 
   .:
@@ -25,7 +30,7 @@ importers:
         version: 5.4.0
       '@sapphire/plugin-api':
         specifier: ^8.3.1
-        version: 8.3.1
+        version: 8.3.1(patch_hash=8d773c87841f18612e76e11e5925099f7a50ba9ac6e2d798ce6700f85a084720)
       '@sapphire/plugin-logger':
         specifier: ^4.0.2
         version: 4.1.0
@@ -1146,7 +1151,7 @@ snapshots:
       '@sapphire/utilities': 3.18.2
       tslib: 2.8.1
 
-  '@sapphire/plugin-api@8.3.1':
+  '@sapphire/plugin-api@8.3.1(patch_hash=8d773c87841f18612e76e11e5925099f7a50ba9ac6e2d798ce6700f85a084720)':
     dependencies:
       '@sapphire/iana-mime-types': 1.22.0
       '@types/ws': 8.18.1

@@ -1,0 +1,115 @@
+diff --git a/CHANGELOG.md b/CHANGELOG.md
+deleted file mode 100644
+index 816eb880478863e4b8b67cb4e7aa0c945571c058..0000000000000000000000000000000000000000
+diff --git a/dist/cjs/index.d.cts b/dist/cjs/index.d.cts
+index 6a7c5c6375b347ad18b69f7560a59a27a49ebae3..bedc77046b205f207765fc5203b83c61ba5dbfe7 100644
+--- a/dist/cjs/index.d.cts
++++ b/dist/cjs/index.d.cts
+@@ -199,6 +199,7 @@ interface SecureCookieStoreSetOptions {
+     domain?: string;
+     path?: string;
+     httpOnly?: boolean;
++    sameSite?: "none" | "lax" | "strict";
+ }
+ 
+ /**
+diff --git a/dist/cjs/lib/structures/api/CookieStore.cjs b/dist/cjs/lib/structures/api/CookieStore.cjs
+index 7e67389ef1e61e394563a0b699153265502a56a6..9928c48e417cb3030e73bbcbf8bcc587623ba326 100644
+--- a/dist/cjs/lib/structures/api/CookieStore.cjs
++++ b/dist/cjs/lib/structures/api/CookieStore.cjs
+@@ -48,7 +48,7 @@ var _CookieStore = class _CookieStore extends Map {
+     set.push(entry);
+     this.response.setHeader("Set-Cookie", set);
+   }
+-  prepare(name, value, { expires, maxAge, domain, path, httpOnly } = {}) {
++  prepare(name, value, { expires, maxAge, domain, path, httpOnly, sameSite } = {}) {
+     const now = /* @__PURE__ */ new Date();
+     if (expires === void 0) {
+       expires = now;
+@@ -70,6 +70,13 @@ var _CookieStore = class _CookieStore extends Map {
+     if (httpOnly ?? true) {
+       entry += `; HttpOnly`;
+     }
++    if (sameSite) {
++      const normalized =
++        typeof sameSite === "string"
++          ? sameSite.charAt(0).toUpperCase() + sameSite.slice(1).toLowerCase()
++          : sameSite;
++      entry += `; SameSite=${normalized}`;
++    }
+     return entry;
+   }
+   /**
+diff --git a/dist/cjs/routes/oauth/callback.post.cjs b/dist/cjs/routes/oauth/callback.post.cjs
+index 2401eb7c83cd75bec0a49e48d7764e490b994f38..62f014807913e6ff42fb0a2af46112e8ee5c72ee 100644
+--- a/dist/cjs/routes/oauth/callback.post.cjs
++++ b/dist/cjs/routes/oauth/callback.post.cjs
+@@ -39,7 +39,11 @@ var _PluginRoute = class _PluginRoute extends Route_cjs.Route {
+       refresh: value.refresh_token,
+       token: value.access_token
+     });
+-    response.cookies.add(auth.cookie, token, { maxAge: value.expires_in });
++    response.cookies.add(auth.cookie, token, {
++      maxAge: value.expires_in,
++      sameSite: "none",
++      secure: true
++    });    
+     return response.json(data);
+   }
+   async fetchAuth(body) {
+diff --git a/dist/esm/index.d.mts b/dist/esm/index.d.mts
+index 6a7c5c6375b347ad18b69f7560a59a27a49ebae3..bedc77046b205f207765fc5203b83c61ba5dbfe7 100644
+--- a/dist/esm/index.d.mts
++++ b/dist/esm/index.d.mts
+@@ -199,6 +199,7 @@ interface SecureCookieStoreSetOptions {
+     domain?: string;
+     path?: string;
+     httpOnly?: boolean;
++    sameSite?: "none" | "lax" | "strict";
+ }
+ 
+ /**
+diff --git a/dist/esm/lib/structures/api/CookieStore.mjs b/dist/esm/lib/structures/api/CookieStore.mjs
+index 5b231a4f74e29c504d07dd4ef454e7bf76e9f4ca..5cd3a315fbcd196b230dd93ac7cec4bf272a85c9 100644
+--- a/dist/esm/lib/structures/api/CookieStore.mjs
++++ b/dist/esm/lib/structures/api/CookieStore.mjs
+@@ -43,7 +43,7 @@ var _CookieStore = class _CookieStore extends Map {
+     set.push(entry);
+     this.response.setHeader("Set-Cookie", set);
+   }
+-  prepare(name, value, { expires, maxAge, domain, path, httpOnly } = {}) {
++  prepare(name, value, { expires, maxAge, domain, path, httpOnly, sameSite } = {}) {
+     const now = /* @__PURE__ */ new Date();
+     if (expires === void 0) {
+       expires = now;
+@@ -65,6 +65,13 @@ var _CookieStore = class _CookieStore extends Map {
+     if (httpOnly ?? true) {
+       entry += `; HttpOnly`;
+     }
++    if (sameSite) {
++      const normalized =
++        typeof sameSite === "string"
++          ? sameSite.charAt(0).toUpperCase() + sameSite.slice(1).toLowerCase()
++          : sameSite;
++      entry += `; SameSite=${normalized}`;
++    }
+     return entry;
+   }
+   /**
+diff --git a/dist/esm/routes/oauth/callback.post.mjs b/dist/esm/routes/oauth/callback.post.mjs
+index 39eeeb7ff8b71e36d87d2653ceb0c9d6b39a74d5..7273fb4ed5820410fbd854a962e56955c9d1b821 100644
+--- a/dist/esm/routes/oauth/callback.post.mjs
++++ b/dist/esm/routes/oauth/callback.post.mjs
+@@ -34,7 +34,11 @@ var _PluginRoute = class _PluginRoute extends Route {
+       refresh: value.refresh_token,
+       token: value.access_token
+     });
+-    response.cookies.add(auth.cookie, token, { maxAge: value.expires_in });
++    response.cookies.add(auth.cookie, token, {
++      maxAge: value.expires_in,
++      sameSite: "none",
++      secure: true
++    });    
+     return response.json(data);
+   }
+   async fetchAuth(body) {

@@ -47,5 +47,10 @@
     "build:prod-actual": "export $(cat .env.production | xargs) &&  prisma generate && tsc --outDir dist",
     "start:prod-actual": "export $(cat .env.production | xargs) && $NVM_PATH node dist/index.js"
   },
-  "prettier": "@sapphire/prettier-config"
+  "prettier": "@sapphire/prettier-config",
+  "pnpm": {
+    "patchedDependencies": {
+      "@sapphire/plugin-api": "patches/@sapphire__plugin-api.patch"
+    }
+  }
 }
