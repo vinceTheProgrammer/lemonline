@@ -28,7 +28,7 @@ inspect.defaultOptions.depth = 1;
 colorette.createColors({ useColor: true });
 
 const api = process.env.BOT_CLIENT_ID && process.env.BOT_CLIENT_SECRET && process.env.BOT_REDIRECT_URI ?  {
-	origin: process.env.NODE_ENV == 'development' ? 'http://localhost:3000' : 'https://vincetheprogrammer.github.io/lemonline',
+	origin: process.env.NODE_ENV == 'development' ? 'http://localhost:3000' : 'https://vincetheprogrammer.github.io',
 	auth: {
 		enabled: true,
 		id: process.env.BOT_CLIENT_ID,
