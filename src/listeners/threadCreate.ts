@@ -16,9 +16,8 @@ export class ThreadCreate extends Listener {
             const starterMsg = await thread.fetchStarterMessage();
             if (!starterMsg || starterMsg.author.bot) return;
 
-
             // fetch channel xp settings
-            const settings = await getChannelXpSettings(starterMsg.channel.id);
+            const settings = await getChannelXpSettings(thread.parent.id);
             if (!settings) return;
 
             // use those settings to increment xp
@@ -36,6 +35,8 @@ export class ThreadCreate extends Listener {
             }
 
             amount = Math.round(amount);
+
+            console.log("hmm")
 
             await addXp(starterMsg.author.id, amount, thread.guild);
         }
