@@ -3,7 +3,7 @@ import { ErrorType } from "../constants/errors.js";
 import { findByDiscordIdWithIntro, incrementIntroRepostCount, updateIntroByDiscordIdAndIntro } from "./database.js";
 import type { Prisma } from "@prisma/client";
 import { getIntroWebhookClient } from "./webhooks.js";
-import { MessageBuilder } from "@sapphire/discord.js-utilities";
+import { isThreadChannel, MessageBuilder } from "@sapphire/discord.js-utilities";
 import { container } from "@sapphire/framework";
 import { canEditMessage } from "./messages.js";
 import { CustomError } from "./custom-error.js";
@@ -43,7 +43,7 @@ export async function syncIntroPost(member: GuildMember, guild: Guild) {
 async function repostIntroPost(member: GuildMember, guild: Guild, message: Message) {
     try {
         const threadChannel = message.channel;
-        if (!threadChannel) throw new CustomError("No thread associated with the old intro message when trying to delete and repost intro.", ErrorType.Error);
+        if (!threadChannel || !isThreadChannel(threadChannel)) throw new CustomError("No thread associated with the old intro message when trying to delete and repost intro.", ErrorType.Error);
         await threadChannel.delete();
         await incrementIntroRepostCount(member.id);
         await createIntroPost(member, guild);

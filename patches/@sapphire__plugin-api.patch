@@ -26,7 +26,7 @@ index 7e67389ef1e61e394563a0b699153265502a56a6..9928c48e417cb3030e73bbcbf8bcc587
      const now = /* @__PURE__ */ new Date();
      if (expires === void 0) {
        expires = now;
-@@ -70,6 +70,13 @@ var _CookieStore = class _CookieStore extends Map {
+@@ -70,6 +70,16 @@ var _CookieStore = class _CookieStore extends Map {
      if (httpOnly ?? true) {
        entry += `; HttpOnly`;
      }
@@ -35,6 +35,9 @@ index 7e67389ef1e61e394563a0b699153265502a56a6..9928c48e417cb3030e73bbcbf8bcc587
 +        typeof sameSite === "string"
 +          ? sameSite.charAt(0).toUpperCase() + sameSite.slice(1).toLowerCase()
 +          : sameSite;
++      if (normalized === "None" && !this.secure) {
++        entry += `; Secure`;
++      }
 +      entry += `; SameSite=${normalized}`;
 +    }
      return entry;
@@ -82,7 +85,7 @@ index 5b231a4f74e29c504d07dd4ef454e7bf76e9f4ca..5cd3a315fbcd196b230dd93ac7cec4bf
      const now = /* @__PURE__ */ new Date();
      if (expires === void 0) {
        expires = now;
-@@ -65,6 +65,13 @@ var _CookieStore = class _CookieStore extends Map {
+@@ -65,6 +65,16 @@ var _CookieStore = class _CookieStore extends Map {
      if (httpOnly ?? true) {
        entry += `; HttpOnly`;
      }
@@ -91,6 +94,9 @@ index 5b231a4f74e29c504d07dd4ef454e7bf76e9f4ca..5cd3a315fbcd196b230dd93ac7cec4bf
 +        typeof sameSite === "string"
 +          ? sameSite.charAt(0).toUpperCase() + sameSite.slice(1).toLowerCase()
 +          : sameSite;
++      if (normalized === "None" && !this.secure) {
++        entry += `; Secure`;
++      }
 +      entry += `; SameSite=${normalized}`;
 +    }
      return entry;
