@@ -6,17 +6,9 @@ import { Guild } from 'discord.js';
 import { CustomError } from './custom-error.js';
 import { ErrorType } from '../constants/errors.js';
 
-export async function logMessage(discordId: string, date?: Date) {
+export async function logMessage(discordId: string) {
     try {
         incrementMessageCount(discordId);
-        if (date) {
-            return await prisma.message.create({
-                data: {
-                    discordId: discordId,
-                    timestamp: date
-                }
-            })
-        }
         return await prisma.message.create({
             data: {
                 discordId: discordId
@@ -26,6 +18,20 @@ export async function logMessage(discordId: string, date?: Date) {
         throw handlePrismaError(error);
     }
 }
+
+export async function getLatestMessageDate(discordId: string) {
+    try {
+      const latestMessage = await prisma.message.findFirst({
+        where: { discordId },
+        orderBy: { timestamp: 'desc' },
+        select: { timestamp: true },
+      });
+  
+      return latestMessage?.timestamp ?? null;
+    } catch (error) {
+      throw handlePrismaError(error);
+    }
+  }
 
 export async function initUser(discordId: string) {
     try {
